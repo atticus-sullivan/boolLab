@@ -1,3 +1,7 @@
+--- Provides some conditional expression tools in Lua.
+-- description
+-- @module cond_expression
+--
 local lpeg = require"lpeg"
 local utils = require"cond_expression_utils"
 local tabular = require"tabular"
@@ -38,6 +42,9 @@ setmetatable(expression, expression)
 -- inheritance
 -- sub = expression:new() -- overwrite function as sub:foo
 
+--- string to expression.
+-- parses the internally stored string and stores the result in the internal .expr field
+-- @return returns the expression object to allow chaining
 function expression:str2expr()
 	assert(type(self.str) == "string", "Cannot build expr, since str is not set")
 	self.expr = self.parser:match(self.str)
