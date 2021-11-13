@@ -1,3 +1,11 @@
+--- Utilities for the cond_expression module.
+
+local _M = {}
+
+--- Creates a shallow copy of a table (array part).
+-- Might use penlight for that thing
+-- @tparam table t the table to copy
+-- @treturn table copy of t
 local function shallow_copy(t)
 	local r = {}
 	for i,v in ipairs(t) do
@@ -6,8 +14,11 @@ local function shallow_copy(t)
 	return r
 end
 
--- permute over the differnt assignments for a set of vars (list of strings)
--- ATTENTION: this function will modify the vars list (in effect it will be empty on each yield)
+--- iterator (1) for permuting over all possible assignments of a list of variables.
+-- Generates in an ascending order (if seen assignment as binary number)
+-- **Attention:** This function will modify it's `vars` argument (will be empty on each yield)
+-- @tparam {string,...} vars a list of variable names (strings)
+-- @tparam tab assignment accumulator in the recursion
 local function _permute(vars, assignment)
 	-- if all variables are set, yield the accumulated assignment
 	if vars[1] == nil then coroutine.yield(assignment) return end
@@ -25,17 +36,27 @@ local function _permute(vars, assignment)
 	table.insert(vars, 1, v)
 end
 
--- wrapper to create a generator
-local function permute(vars)
+--- iterator (2) for permuting over all possible assignments of a list of variables.
+-- Generates in an ascending order (if seen assignment as binary number)
+-- @tparam {string,...} vars a list of variable names (strings)
+-- @return the iterator based on coroutines
+function _M.permute(vars)
 	local _vars = shallow_copy(vars) -- copy since _permute will modify vars
 	return coroutine.wrap(function() _permute(_vars, {}) end)
 end
 
-local function bool2str(x)
+--- Convert booleans to strings (`0`/`1`).
+-- @tparam bool x the boolean to convert
+-- @return the textual representation
+function _M.bool2str(x)
 	if x then return "1" else return "0" end
 end
 
-local function set2list(set)
+--- Converts a set (keys are values) to an array.
+-- maybe replace with penlight
+-- @tparam tab set a table with the keys as values
+-- @treturn tab a list of the set entries
+function _M.set2list(set)
 	local list = {}
 	for k,_ in pairs(set) do
 		table.insert(list, k)
@@ -43,7 +64,11 @@ local function set2list(set)
 	return list
 end
 
-local function list2set(list)
+--- Converts an array to a set (keys are values).
+-- maybe replace with penlight
+-- @tparam tab list
+-- @treturn tab a table with the keys as values
+function _M.list2set(list)
 	local set = {}
 	for _,v in ipairs(list) do
 		set[v] = "1"
@@ -51,7 +76,13 @@ local function list2set(list)
 	return set
 end
 
-local function union(t1,t2)
+--- Perform a union on two sets.
+-- maybe replace with penlight
+-- sets are tables with the keys as values
+-- @tparam set t1 the one set
+-- @tparam set t2 the other set
+-- @treturn set a new set containing the set entries of both sets
+function _M.union(t1,t2)
 	local r = {}
 	for k,v in pairs(t1) do
 		r[k] = v
@@ -62,7 +93,10 @@ local function union(t1,t2)
 	return r
 end
 
-local function table_print(t)
+--- Print a nested table
+-- maybe replace with penlight
+-- @tparam tab t the nested table
+function _M.table_print(t)
 	local function table_print_exec(t)
 		if type(t) ~= "table" then io.write(tostring(t)) return end
 		io.write("{")
@@ -76,12 +110,4 @@ local function table_print(t)
 	print()
 end
 
-return {
-	shallow_copy = shallow_copy,
-	permute = permute,
-	bool2str = bool2str,
-	set2list = set2list,
-	list2set = list2set,
-	table_print = table_print,
-	union = union,
-}
+return _M

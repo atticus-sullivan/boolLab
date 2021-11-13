@@ -1,7 +1,8 @@
 --- Provides some conditional expression tools in Lua.
--- description
--- @module cond_expression
---
+-- Before calling a function, make sure you fullfill the stated prerequisites,
+-- otherwise assert fill faill -> you may used pcall to wrap the call
+-- @alias expression
+
 local lpeg = require"lpeg"
 local utils = require"cond_expression_utils"
 local tabular = require"tabular"
@@ -27,6 +28,17 @@ G = Space * G * -1
 
 local expression = {str=nil, expr=nil, table=nil, vars=nil, parser=G} -- default values here
 
+--- Create a new expression.
+-- This function takes a single table as argument with the following keys
+-- possible as parameters. Not all keys have to be set e.g providing the `str`
+-- suffices.
+-- @tparam {str=string,expr,table={0,1}*->{0,1},vars:{string,...}} o table argument with **keys:**
+--
+-- - `str` is the string representation of the expression,
+-- - `expr` is the nested table representation (you should only tamper with that if you know what you're doing),
+-- - `table` is the representation of the truthtable inputString->out and
+-- - `vars` is a lift of the variable names
+-- @return the expression object
 function expression:new(o) -- key/value passing
 	o = o or {}
 	setmetatable(o, self) -- use the same metatable for all objects
@@ -34,23 +46,23 @@ function expression:new(o) -- key/value passing
 	return o
 end
 
+--- new can be called via `expression(o)` as well
+-- @see expression:new
 expression.__call = function(self, o) return self:new(o) end
 setmetatable(expression, expression)
 
--- instanciation
--- obj = expression:new{attrs}
--- inheritance
--- sub = expression:new() -- overwrite function as sub:foo
-
 --- string to expression.
--- parses the internally stored string and stores the result in the internal .expr field
--- @return returns the expression object to allow chaining
+-- parses the internally stored string (`str`) and stores the result in the internal `expr` field
+-- @return the expression object to allow chaining
 function expression:str2expr()
 	assert(type(self.str) == "string", "Cannot build expr, since str is not set")
 	self.expr = self.parser:match(self.str)
 	return self
 end
 
+--- expression to string.
+-- parses the internally stored expression (`expr`) and stores the result in the internal `str` field
+-- @return the expression object to allow chaining
 function expression:expr2str()
 	assert(type(self.expr) == "table", "cannot build string without expr")
 	local function foo(expr)
@@ -69,6 +81,11 @@ function expression:expr2str()
 	return self
 end
 
+--- evaluate the expression with a set of assignments.
+-- assigns vales to the variables and returns the result. If not all variables are assigned `true`/`false` this function will error
+-- @raise `variable not set` and `assigns not true/false`
+-- @tparam {string->boolean} assignment assigns each variable a value
+-- @return the result of the evaluation -> `true`/`false`
 function expression:eval(assignment)
 	assert(type(self.expr) == "table", "can only evaluate expression if expr is set")
 	-- evaluate a given expression based on a given assignment
@@ -108,6 +125,9 @@ function expression:eval(assignment)
 	return foo(self.expr, assignment)
 end
 
+--- expression to table.
+-- create a truthtable for the stored `expr` and store it in `table` field
+-- @return the expression object to allow chaining
 function expression:expr2table()
 	assert(type(self.expr) == "table" and type(self.vars) == "table", "vars and expr have to be set to be able to generate the table")
 	self.table = {}
@@ -122,6 +142,10 @@ function expression:expr2table()
 	return self
 end
 
+--- expression to vars.
+-- Collect the names of the variables used in the expression.
+-- The result is stored in the `vars` field as a set. This means that the real values are the keys of the table
+-- @return the expression object to allow chaining
 function expression:expr2vars()
 	assert(type(self.expr) == "table", "cannot retrieve vars if expr is not given")
 	-- go through the parsed expression and collect all used variables
@@ -147,6 +171,10 @@ function expression:expr2vars()
 	return self
 end
 
+--- convert table to a knf expression
+-- use `table` to create a knf expression stored in `expr`
+-- @tparam boolean short whether `and` and `or` or `+` and `*` should be used as operantors
+-- @return the expression object to allow chaining
 function expression:table2knfexpr(short)
 	assert(type(self.table) == "table", "table has to be set for knfexpr")
 	self.expr = {}
@@ -174,6 +202,10 @@ function expression:table2knfexpr(short)
 	return self
 end
 
+--- convert table to a dnf expression
+-- use `table` to create a dnf expression stored in `expr`
+-- @tparam boolean short whether `and` and `or` or `+` and `*` should be used as operantors
+-- @return the expression object to allow chaining
 function expression:table2dnfexpr(short)
 	assert(type(self.table) == "table", "table has to be set for dnfexpr")
 	self.expr = {}
@@ -201,6 +233,10 @@ function expression:table2dnfexpr(short)
 	return self
 end
 
+--- Check expressions for semantic equivalence.
+-- Checks if the evaluation of the expression and another expression result in the same outcome
+-- @tparam expression other The other expression to compare the current one
+-- @return `true` if all results match
 function expression:equiv(other)
 	local set1 = utils.list2set(self.vars)
 	local set2 = utils.list2set(other.vars)
@@ -212,7 +248,10 @@ function expression:equiv(other)
 	return true
 end
 
-function expression.print_truthtable(...) -- prints truthtable of arguments
+--- Print a truthtable of expressions.
+-- Prints the truthtable of the current expression and the argument expressions
+-- @param ... other expressions to include in the truthtable
+function expression.print_truthtable(...)
 	local tab = {}
 
 	local vars = {}

@@ -1,6 +1,12 @@
+--- Nicely print tabulars
+local _M = {}
+
 local function max(a,b) return (a ~= nil and a > b) and a or b end
 
-local function tabular_printing(content)
+--- Print a tabular nicely.
+-- prints a nice tabular with even sized columns (if they don't get too big)
+-- @tparam tab content a tabular holding tables (rows) of columns
+function _M.tabular_printing(content)
 	local colSizes = {}
 	for _,v1 in ipairs(content) do
 		for i2,v2 in ipairs(v1) do
@@ -34,6 +40,4 @@ local function tabular_printing(content)
 	print(string.rep("=", 1+_sum(colSizes)))
 end
 
-return {
-	tabular_printing = tabular_printing,
-}
+return _M
