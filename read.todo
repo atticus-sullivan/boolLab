@@ -1,3 +1,0 @@
-- tabular:
-    - plain mode with no extra whitespaces and no leading and no trailing |
-	- check if trailing whitespace can be removed
