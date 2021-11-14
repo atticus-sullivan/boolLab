@@ -273,7 +273,7 @@ function expression.print_truthtable(...)
 	end
 	table.insert(tab, hdr)
 
-	local row 
+	local row
 	for p in utils.permute(vars) do
 		row = {}
 		for _,v in ipairs(vars) do
