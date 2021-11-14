@@ -6,7 +6,7 @@ local _M = {}
 -- Might use penlight for that thing
 -- @tparam table t the table to copy
 -- @treturn table copy of t
-local function shallow_copy(t)
+function _M.shallow_copy(t)
 	local r = {}
 	for i,v in ipairs(t) do
 		r[i] = v
@@ -41,7 +41,7 @@ end
 -- @tparam {string,...} vars a list of variable names (strings)
 -- @return the iterator based on coroutines
 function _M.permute(vars)
-	local _vars = shallow_copy(vars) -- copy since _permute will modify vars
+	local _vars = _M.shallow_copy(vars) -- copy since _permute will modify vars
 	return coroutine.wrap(function() _permute(_vars, {}) end)
 end
 
