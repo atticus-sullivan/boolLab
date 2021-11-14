@@ -1,0 +1,4 @@
+(A + B) (B + C) (not A + not C)
+(B + AC) (not A + not C)
+B not A + B not C + A C not A + A C not C
+B (not A + not C)
