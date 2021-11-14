@@ -33,15 +33,17 @@ function _M.read(fn)
 
 	local varsS,i
 	for line in file:lines() do
-		varsS, varsB, i = "", true, 1
-		for _,x in ipairs(table.pack(csv(line))) do
-			x = x:match([[%s*"?(.*)"?%s*]]) -- strip whitespaces and surrounding quotes
-			if x == "" then varsB = false
-			elseif varsB then
-				varsS = varsS .. x
-			else
-				exprs[exprsL[i]].table[varsS] = x
-				i = i+1
+		if not (line == "" or line:match("=*") == line) then
+			varsS, varsB, i = "", true, 1
+			for _,x in ipairs(table.pack(csv(line))) do
+				x = x:match([[%s*"?(.*)"?%s*]]) -- strip whitespaces and surrounding quotes
+				if x == "" then varsB = false
+				elseif varsB then
+					varsS = varsS .. x
+				else
+					exprs[exprsL[i]].table[varsS] = x
+					i = i+1
+				end
 			end
 		end
 	end
