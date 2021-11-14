@@ -1,0 +1,142 @@
+# semantic equality
+A and A
+= A
+
+A or A
+= A
+
+not (not A)
+= A
+
+A and not A
+= 0
+
+A or not A
+= 1
+
+A and B
+= B and A
+
+A or B
+= B or A
+
+A and (B and C)
+= (A and B) and C
+
+A or (B or C)
+= (A or B) or C
+
+A and (B or C)
+= A and B or A and C
+
+A or (B and C)
+= (A or B) and (A or C)
+
+not(A and B)
+= not A or not B
+
+not(A or B)
+= not A and not B
+
+A or (A and B)
+= A
+
+A and (A or B)
+= A
+
+X and A or not X and B
+= X and A or not X and B or A and B
+
+(X or A) and (not X or B) = (X or A) and (not X or B) and (A or B)
+
+X and A or not X and A
+= A
+
+(X or A) and (not X or A)
+= A
+
+# A xor B = A and not B or not A and B
+
+# a|b|c||y|z
+# 0|0|0||0|1
+# 0|0|1||1|1
+# 0|1|1||1|0
+# 1|0|0||0|1
+# 1|0|1||1|1
+# 1|1|0||0|1
+# 1|1|1||1|1
+# y = don't know # TODO
+# x = don't know # TODO
+
+not A * not B * not C + not A * B * not C + A * B * not C + A * B * C # DNF
+= (not A + B) * (A + not C) * (B + not C)
+= (not A + B + C) * (not A + B + not C) * (A + B + not C) * (A + not B + not C) * (A + B + not C) * (not A + B + not C)
+= (not A + B + C) * (A + not B + not C) * (A + B + not C) * (not A + B + not C) # KNF
+
+# a|b|c||z
+# 0|0|0||0
+# 0|0|1||0
+# 0|1|0||1
+# 0|1|1||1
+# 1|0|0||0
+# 1|0|1||0
+# 1|1|0||1
+# 1|1|1||0
+# z = not a*b*not c + not a*b*c + a*b*not c # kdnf
+# = not a*b*(not c + c) + a*b*not c
+# = not a*b + a*b*not c
+# = not a * b * (not c+c) + b * not c * (a+not a)
+# = not a * b + b * not c
+# = b (not a + not c)
+
+# a|b|c||z
+# 0|0|0||0
+# 0|0|1||1
+# 0|1|0||1
+# 0|1|1||0
+# 1|0|0||1
+# 1|0|1||0
+# 1|1|0||0
+# 1|1|1||1
+# z = not a*not b*c + not a*b*not c + a*not b*not c + a*b*c # kdnf
+# y = (a+b+c)*(a+not b+not c)*(not a+b+not c)*(not a+not b+c) #kknf
+
+## ZÜ
+
+(A+not A)*B
+= B
+
+# (A+B)*C + not(A*C)
+# = A*C + B*C + not(A*C)
+# = 1 # TODO make 0 and 1 as variables too for boolean constants
+
+(A+B)*(A+C)*(not A+not C)
+= (A+B+C)*(A+B+not C)*(A+B+C)*(not A+B+C)*(not A+B+not C)*(not A+not B+not C)
+= (A*B + A*C + B + B*C)*(not A + not C)
+= (A*C + B)(not A + not C)
+= B*(not A+not C)
+= B*not(A*C)
+
+not(A*B + A*C)
+= not(A*(B*C))
+= not A + not(B+C)
+= not A + not B * not C
+
+A*B*C + not A*B + not(not B+A)
+= A*B*C + not A*B + not A*B
+= B*(A*B + not A)
+= B*(A*C + not A + C) # Resulution
+= not A*B or B*C # DNF
+= B*(not A + C) # KNF
+
+# a|b|c||y
+# 0|0|0||0
+# 0|0|1||0
+# 0|1|0||1
+# 0|1|1||1
+# 1|0|0||1
+# 1|0|1||0
+# 1|1|0||0
+# 1|1|1||1
+# y = not a*b*not c + not a*b*c + a*not b*not c + a*b*c # KDNF
+# z = (a+b+c)*(a+b+not c)*(not a+b+not c)*(not a+b+not c)*(not a+not b+c) # KKNF
