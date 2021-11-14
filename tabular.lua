@@ -13,16 +13,22 @@ function _M.tabular_printing(content)
 			colSizes[i2] = max(colSizes[i2], #v2)
 		end
 	end
-	local format = "| "
+	local format = ""
+	local first = true
 	for _,v in ipairs(colSizes) do
 		local x
 		if v < 100 then x = v else
 			print("Warning one column is larger than 100 characters")
 			x = 99
 		end
-		format = format .. "%-" .. tostring(x) .. "s | "
+		if not first then
+			format = format .. " | %-" .. tostring(x) .. "s"
+		else
+			format = format .. "%-" .. tostring(x) .. "s"
+			first = false
+		end
 	end
-	local first = true
+	first = true
 	local function _sum(t)
 		local r = 0
 		for _,v in ipairs(t) do
@@ -33,11 +39,11 @@ function _M.tabular_printing(content)
 	for _,v in ipairs(content) do
 		print(string.format(format, table.unpack(v, 1, #colSizes)))
 		if first then
-			print(string.rep("=", 1+_sum(colSizes)))
+			print(string.rep("=", _sum(colSizes)-3))
 		end
 		first = false
 	end
-	print(string.rep("=", 1+_sum(colSizes)))
+	print(string.rep("=", _sum(colSizes)-3))
 end
 
 return _M

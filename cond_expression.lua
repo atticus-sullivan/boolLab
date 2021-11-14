@@ -173,7 +173,7 @@ end
 
 --- convert table to a knf expression
 -- use `table` to create a knf expression stored in `expr`
--- @tparam boolean short whether `and` and `or` or `+` and `*` should be used as operantors
+-- @tparam boolean short whether `and` and `or` or `+` and `*` should be used as operators
 -- @return the expression object to allow chaining
 function expression:table2knfexpr(short)
 	assert(type(self.table) == "table", "table has to be set for knfexpr")
@@ -204,7 +204,7 @@ end
 
 --- convert table to a dnf expression
 -- use `table` to create a dnf expression stored in `expr`
--- @tparam boolean short whether `and` and `or` or `+` and `*` should be used as operantors
+-- @tparam boolean short whether `and` and `or` or `+` and `*` should be used as operators
 -- @return the expression object to allow chaining
 function expression:table2dnfexpr(short)
 	assert(type(self.table) == "table", "table has to be set for dnfexpr")
