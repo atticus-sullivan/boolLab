@@ -6,6 +6,7 @@
 local lpeg = require"lpeg"
 local utils = require"cond_expression_utils"
 local tabular = require"tabular"
+local csv = require"csv"("|")
 
 -- Lexical Elements
 local Space = lpeg.S(" \n\t")^0
@@ -18,15 +19,15 @@ local NOT = lpeg.C(lpeg.P("not") + lpeg.P("not")) * Space
 
 -- Grammar
 local Exp, Term, Factor = lpeg.V"Exp", lpeg.V"Term", lpeg.V"Factor"
-G = lpeg.P{ Exp,
+local boolGrammar = lpeg.P{ Exp,
 	Exp = lpeg.Ct(Term * (OR * Term)^0),
 	Term = lpeg.Ct(Factor * (AND * Factor)^0),
 	Factor = lpeg.Ct(NOT^-1 * (var + Open * Exp * Close)),
 }
 -- check if reached end of inputstring (-1 is empty string if nothing comes behind)
-G = Space * G * -1
+boolGrammar = Space * boolGrammar * -1
 
-local expression = {str=nil, expr=nil, table=nil, vars=nil, parser=G} -- default values here
+local expression = {str=nil, expr=nil, table=nil, vars=nil} -- default values here
 
 --- Create a new expression.
 -- This function takes a single table as argument with the following keys
@@ -56,7 +57,7 @@ setmetatable(expression, expression)
 -- @return the expression object to allow chaining
 function expression:str2expr()
 	assert(type(self.str) == "string", "Cannot build expr, since str is not set")
-	self.expr = self.parser:match(self.str)
+	self.expr = boolGrammar:match(self.str)
 	return self
 end
 
@@ -288,6 +289,43 @@ function expression.print_truthtable(...)
 
 	print()
 	tabular.tabular_printing(tab)
+end
+
+function expression.read(fn)
+	local file = io.open(fn)
+	local hdr = file:read("*line")
+
+	local exprs = {}
+	local exprsL = {}
+	local varsB = true
+	local vars = {}
+	for _,x in ipairs(table.pack(csv.csv(hdr))) do
+		if x == "" then varsB = false
+		elseif varsB then
+			table.insert(vars, x)
+		else
+			table.insert(exprsL, x)
+			exprs[x] = expression:new{table={}, vars=utils.shallow_copy(vars)}
+		end
+	end
+
+	local varsS,i
+	for line in file:lines() do
+		if not (line == "" or line:match("=*") == line) then
+			varsS, varsB, i = "", true, 1
+			for _,x in ipairs(table.pack(csv.csv(line))) do
+				x = x:match([[%s*"?(.*)"?%s*]]) -- strip whitespaces and surrounding quotes
+				if x == "" then varsB = false
+				elseif varsB then
+					varsS = varsS .. x
+				else
+					exprs[exprsL[i]].table[varsS] = x
+					i = i+1
+				end
+			end
+		end
+	end
+	return exprs
 end
 
 return expression

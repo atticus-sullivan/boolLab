@@ -1,5 +1,4 @@
 local expression = require"cond_expression"
-local read = require"read"
 
 local e1 = expression{str="a * b or c"}
 e1:str2expr():expr2vars():expr2table()
@@ -12,9 +11,16 @@ print(e1.str)
 
 e1:print_truthtable()
 
-local exprs = read.read("t")
+local exprs = expression.read("t")
 for k,v in pairs(exprs) do
 	print(k)
 	v:table2dnfexpr(true):expr2str()
 	v:print_truthtable()
+end
+
+for k,v in pairs(exprs) do
+	print(k, table.concat(v.vars, ","))
+	for k1,v1 in pairs(v.table) do
+		print(k1, "->", v1)
+	end
 end
