@@ -291,6 +291,12 @@ function expression.print_truthtable(...)
 	tabular.tabular_printing(tab)
 end
 
+--- Read a truthtable from file.
+-- Reads a truthtable from a csv-like file (sep is the | by default)
+-- Structure is `in1|in2|...||outName1|outName2`
+-- @param fn name of the file to read in
+-- @treturn str->expression map of string to expression (the column header of
+-- the output column is taken as name)
 function expression.read(fn)
 	local file = io.open(fn)
 	local hdr = file:read("*line")
