@@ -1,15 +1,6 @@
 local _M = {}
 
--- TODO should be the same as tab_eq from test.lua
-local function set_eq(s1, s2)
-	for k,v in pairs(s1) do
-		if s2[k] ~= v then return false end
-	end
-	for k,v in pairs(s2) do
-		if s1[k] ~= v then return false end
-	end
-	return true
-end
+local utils = require("cond_expression_utils")
 
 local function expand(x)
 	local function foo(x, i, acc)
@@ -28,15 +19,6 @@ local function expand(x)
 		foo(k, 1, ret)
 	end
 	return ret
-end
-
--- TODO shallow copy from utils ipairs -> pairs
-local function shallow_copy(t)
-	local res = {}
-	for k,v in pairs(t) do
-		res[k] = v
-	end
-	return res
 end
 
 local function print_karnaugh_tab(t, vars)
@@ -76,31 +58,6 @@ local function print_karnaugh_tab(t, vars)
 	end
 end
 
--- TODO to utils (new function for pairs instead of ipairs)
-local function table_print(t)
-	local function table_print_exec(t)
-		if type(t) ~= "table" then io.write(tostring(t)) return end
-		io.write("{")
-		for k,v in pairs(t) do
-			io.write(tostring(k), "->")
-			table_print_exec(v)
-			io.write(", ")
-		end
-		io.write("}")
-	end
-	table_print_exec(t)
-	print()
-end
-
--- TODO to utils
-local function set_size(s)
-	local ret = 0
-	for _,_ in pairs(s) do
-		ret = ret + 1
-	end
-	return ret
-end
-
 function _M.combine(x1,x2)
 	local ret,diff = "",0
 	for i=1,#x1 do
@@ -137,7 +94,7 @@ local function perm(set, len)
 		for k,_ in pairs(set) do
 			set[k] = nil
 			acc[k] = true
-			if set_size(acc) == len
+			if utils.set_size(acc) == len
 			then
 				coroutine.yield(acc)
 			else
@@ -151,7 +108,7 @@ local function perm(set, len)
 end
 
 local function minimize(t)
-	local tab = shallow_copy(t)
+	local tab = utils.shallow_copy(t)
 
 	local changed
 	repeat
@@ -176,43 +133,93 @@ local function minimize(t)
 		for k,_ in pairs(used) do
 			if t_new[k] then t_new[k] = nil end
 		end
-		table_print(t_new)
+		utils.table_print_pairs(t_new)
 		print()
 		t = t_new
-	until not changed or set_size(t) == 1
+	until not changed or utils.set_size(t) == 1
 
 	local ret = {}
-	for i=1,set_size(t) do
+	for i=1,utils.set_size(t) do
 		for p in perm(t, i) do
 			local x = expand(p)
-			table_print(p)
-			table_print(x)
-			if set_eq(x, tab) then
+			utils.table_print_pairs(p)
+			utils.table_print_pairs(x)
+			if utils.tab_eq(x, tab) then
 				print("matches")
-				table.insert(ret, shallow_copy(p))
+				table.insert(ret, utils.shallow_copy(p))
 			end
 			print()
 		end
-		if #ret > 0 then table_print(ret) return ret end
+		if #ret > 0 then utils.table_print_pairs(ret) return ret end
 	end
 	print("nothing found")
 	return nil
 end
 
-function _M.handle_knf(tab)
+function _M.handle_knf(tab, vars)
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "0" then t[k] = true end
 	end
-	return minimize(t)
+	for _,m in ipairs(minimize(t)) do
+		local e = {}
+		for v1,_ in pairs(m) do
+			local sub = {}
+			local i = 1
+			for v2 in v1:gmatch(".") do
+				assert(i <= #vars, "subexpressions longer than variables")
+				if v2 == "x" then
+				elseif v2 == "1" then
+					table.insert(sub, {"not", vars[i]})
+					table.insert(sub, "or")
+				elseif v2 == "0" then
+					table.insert(sub, {vars[i]})
+					table.insert(sub, "or")
+				else
+					error(string.format("Unknown char %s in subexpression %s", v2, v1))
+				end
+				i = i+1
+			end
+			table.remove(sub)
+			table.insert(e, sub)
+			table.insert(e, "and")
+		end
+		table.remove(e)
+		utils.table_print(e)
+	end
 end
 
-function _M.handle_dnf(tab)
+function _M.handle_dnf(tab, vars)
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "1" then t[k] = true end
 	end
-	return minimize(t)
+	for _,m in ipairs(minimize(t)) do
+		local e = {}
+		for v1,_ in pairs(m) do
+			local sub = {}
+			local i = 1
+			for v2 in v1:gmatch(".") do
+				assert(i <= #vars, "subexpressions longer than variables")
+				if v2 == "x" then
+				elseif v2 == "0" then
+					table.insert(sub, {"not", vars[i]})
+					table.insert(sub, "and")
+				elseif v2 == "1" then
+					table.insert(sub, {vars[i]})
+					table.insert(sub, "and")
+				else
+					error(string.format("Unknown char %s in subexpression %s", v2, v1))
+				end
+				i = i+1
+			end
+			table.remove(sub)
+			table.insert(e, sub)
+			table.insert(e, "or")
+		end
+		table.remove(e)
+		utils.table_print(e)
+	end
 end
 
 -- TODO for test
@@ -238,7 +245,7 @@ local tab2 = {
 	["111"] = "0",
 }
 
--- _M.handle_knf(tab1)
-_M.handle_knf(tab2)
+_M.handle_knf(tab1, {"a", "b", "c"})
+_M.handle_knf(tab2, {"a", "b", "c"})
 
 return _M
