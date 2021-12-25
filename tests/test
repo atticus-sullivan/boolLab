@@ -140,3 +140,4 @@ A*B*C + not A*B + not(not B+A)
 # 1|1|1||1
 # y = not a*b*not c + not a*b*c + a*not b*not c + a*b*c # KDNF
 # z = (a+b+c)*(a+b+not c)*(not a+b+not c)*(not a+b+not c)*(not a+not b+c) # KKNF
+>>>>>>> main
