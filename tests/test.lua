@@ -371,8 +371,6 @@ describe('expr', function()
 	local tr = {
 		str="a+b*c",
 		expr={"a", "+", {"b", "*", "c"}},
-		knf={{"a", "or", "b", "or", {"not", "c"}}, "and", {"a", "or", "b", "or", "c"}, "and", {"a", "or", {"not", "b"}, "or", "c"}},
-		dnf={{{"not", "a"}, "and", "b", "and", "c"}, "or", {"a", "and", {"not", "b"}, "and", {"not", "c"}}, "or", {"a", "and", {"not", "b"}, "and", "c"}, "or", {"a", "and", "b", "and", {"not", "c"}}, "or", {"a", "or", "b", "or", "c"}},
 		table=t,
 		vars={"a", "b", "c"}
 	}
@@ -390,8 +388,6 @@ describe('expr', function()
 	tr = {
 		str="(a+b)*c",
 		expr={{"a", "+", "b"}, "*", "c"},
-		knf={{"a", "or", "b", "or", "c"}, "and", {"a", "or", "b", "or", {"not", "c"}}, "and", {"a", "or", {"not", "b"}, "or", "c"}, "and", {{"not", "a"}, "or", "b", "or", "c"}, "and", {{"not", "a"}, "or", {"not", "b"}, "or", "c"}},
-		dnf={{{"not", "a"}, "and", "b", "and", "c"}, "or", {"a", "and", {"not", "b"}, "and", "c"}, "or", {"a", "and", "b", "and", "c"}},
 		table=t,
 		vars={"a", "b", "c"}
 	}
