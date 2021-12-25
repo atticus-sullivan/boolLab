@@ -226,31 +226,4 @@ function _M.handle_dnf(tab,vars)
 	return ret
 end
 
--- TODO for test -> HOW test this, semantic equiv isn't enough, how would one test if this is minimal?
--- TODO no testing while duplicates are present
--- local tab1 = {
--- 	["000"] = "0",
--- 	["001"] = "0",
--- 	["010"] = "0",
--- 	["011"] = "1",
--- 	["100"] = "1",
--- 	["101"] = "1",
--- 	["110"] = "0",
--- 	["111"] = "1",
--- }
-
--- local tab2 = {
--- 	["000"] = "0",
--- 	["001"] = "1",
--- 	["010"] = "1",
--- 	["011"] = "0",
--- 	["100"] = "0",
--- 	["101"] = "0",
--- 	["110"] = "1",
--- 	["111"] = "0",
--- }
-
--- _M.handle_knf(tab1, {"a", "b", "c"})
--- _M.handle_knf(tab2, {"a", "b", "c"})
-
 return _M
