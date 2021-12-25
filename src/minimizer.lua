@@ -1,5 +1,6 @@
 local _M = {}
 
+-- TODO should be the same as tab_eq from test.lua
 local function set_eq(s1, s2)
 	for k,v in pairs(s1) do
 		if s2[k] ~= v then return false end
@@ -29,6 +30,7 @@ local function expand(x)
 	return ret
 end
 
+-- TODO shallow copy from utils ipairs -> pairs
 local function shallow_copy(t)
 	local res = {}
 	for k,v in pairs(t) do
@@ -74,6 +76,7 @@ local function print_karnaugh_tab(t, vars)
 	end
 end
 
+-- TODO to utils (new function for pairs instead of ipairs)
 local function table_print(t)
 	local function table_print_exec(t)
 		if type(t) ~= "table" then io.write(tostring(t)) return end
@@ -89,6 +92,7 @@ local function table_print(t)
 	print()
 end
 
+-- TODO to utils
 local function set_size(s)
 	local ret = 0
 	for _,_ in pairs(s) do
@@ -115,6 +119,7 @@ function _M.combine(x1,x2)
 	if diff > 1 then return nil else return ret end
 end
 
+-- TODO from rosetta code
 --returns the powerset of s, out of order.
 local function powerset(s, start)
   start = start or 1
@@ -145,14 +150,8 @@ local function perm(set, len)
 	return coroutine.wrap(function() _perm(set, len, {}) end)
 end
 
-function _M.handle_dnf(tab)
-	local t = {}
-	for k,v in pairs(tab) do
-		if v == 1 then t[k] = true end
-	end
-	table_print(t)
-
-	tab = shallow_copy(t)
+local function minimize(t)
+	local tab = shallow_copy(t)
 
 	local changed
 	repeat
@@ -200,20 +199,46 @@ function _M.handle_dnf(tab)
 	return nil
 end
 
+function _M.handle_knf(tab)
+	local t = {}
+	for k,v in pairs(tab) do
+		if v == "0" then t[k] = true end
+	end
+	return minimize(t)
+end
+
+function _M.handle_dnf(tab)
+	local t = {}
+	for k,v in pairs(tab) do
+		if v == "1" then t[k] = true end
+	end
+	return minimize(t)
+end
+
+-- TODO for test
 local tab1 = {
-	["011"] = 1,
-	["111"] = 1,
-	["101"] = 1,
-	["100"] = 1,
+	["000"] = "0",
+	["001"] = "0",
+	["010"] = "0",
+	["011"] = "1",
+	["100"] = "1",
+	["101"] = "1",
+	["110"] = "0",
+	["111"] = "1",
 }
 
 local tab2 = {
-	["001"] = 1,
-	["010"] = 1,
-	["110"] = 1,
+	["000"] = "0",
+	["001"] = "1",
+	["010"] = "1",
+	["011"] = "0",
+	["100"] = "0",
+	["101"] = "0",
+	["110"] = "1",
+	["111"] = "0",
 }
 
--- print_karnaugh_tab(tab2, {"a", "b", "c"})
-_M.handle_dnf(tab2)
+-- _M.handle_knf(tab1)
+_M.handle_knf(tab2)
 
 return _M
