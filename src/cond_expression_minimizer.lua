@@ -1,6 +1,7 @@
 local _M = {}
 
-local utils = require("cond_expression_utils")
+local utils      = require("cond_expression_utils")
+local expression = require("cond_expression")
 
 local function expand(x)
 	local function foo(x, i, acc)
@@ -58,7 +59,7 @@ local function print_karnaugh_tab(t, vars)
 	end
 end
 
-function _M.combine(x1,x2)
+local function combine(x1,x2)
 	local ret,diff = "",0
 	for i=1,#x1 do
 		if x1:sub(i,i) == x2:sub(i,i)
@@ -118,7 +119,7 @@ local function minimize(t)
 		for k1,_ in pairs(t) do
 			for k2,_ in pairs(t) do
 				if k1 ~= k2 then
-					local c = _M.combine(k1,k2)
+					local c = combine(k1,k2)
 					if c then
 						t_new[c] = true
 						changed = true
@@ -156,11 +157,13 @@ local function minimize(t)
 	return nil
 end
 
-function _M.handle_knf(tab, vars)
+function _M.handle_knf(self)
+	local tab,vars = self.tab, self.vars
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "0" then t[k] = true end
 	end
+	local ret = {}
 	for _,m in ipairs(minimize(t)) do
 		local e = {}
 		for v1,_ in pairs(m) do
@@ -185,15 +188,18 @@ function _M.handle_knf(tab, vars)
 			table.insert(e, "and")
 		end
 		table.remove(e)
-		utils.table_print(e)
+		table.insert(ret, expression{expr=e, table=utils.shallow_copy(self.tab)})
 	end
+	return table.unpack(ret) or nil
 end
 
-function _M.handle_dnf(tab, vars)
+function _M.handle_dnf(self)
+	local tab,vars = self.tab, self.vars
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "1" then t[k] = true end
 	end
+	local ret = {}
 	for _,m in ipairs(minimize(t)) do
 		local e = {}
 		for v1,_ in pairs(m) do
@@ -218,34 +224,36 @@ function _M.handle_dnf(tab, vars)
 			table.insert(e, "or")
 		end
 		table.remove(e)
-		utils.table_print(e)
+		table.insert(ret, expression{expr=e, table=utils.shallow_copy(self.tab)})
 	end
+	return table.unpack(ret) or nil
 end
 
--- TODO for test
-local tab1 = {
-	["000"] = "0",
-	["001"] = "0",
-	["010"] = "0",
-	["011"] = "1",
-	["100"] = "1",
-	["101"] = "1",
-	["110"] = "0",
-	["111"] = "1",
-}
+-- TODO for test -> HOW test this, semantic equiv isn't enough, how would one test if this is minimal?
+-- TODO no testing while duplicates are present
+-- local tab1 = {
+-- 	["000"] = "0",
+-- 	["001"] = "0",
+-- 	["010"] = "0",
+-- 	["011"] = "1",
+-- 	["100"] = "1",
+-- 	["101"] = "1",
+-- 	["110"] = "0",
+-- 	["111"] = "1",
+-- }
 
-local tab2 = {
-	["000"] = "0",
-	["001"] = "1",
-	["010"] = "1",
-	["011"] = "0",
-	["100"] = "0",
-	["101"] = "0",
-	["110"] = "1",
-	["111"] = "0",
-}
+-- local tab2 = {
+-- 	["000"] = "0",
+-- 	["001"] = "1",
+-- 	["010"] = "1",
+-- 	["011"] = "0",
+-- 	["100"] = "0",
+-- 	["101"] = "0",
+-- 	["110"] = "1",
+-- 	["111"] = "0",
+-- }
 
-_M.handle_knf(tab1, {"a", "b", "c"})
-_M.handle_knf(tab2, {"a", "b", "c"})
+-- _M.handle_knf(tab1, {"a", "b", "c"})
+-- _M.handle_knf(tab2, {"a", "b", "c"})
 
 return _M
