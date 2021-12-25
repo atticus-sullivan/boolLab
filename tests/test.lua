@@ -1,6 +1,33 @@
 local lester = require 'lester'
 local describe, it, expect = lester.describe, lester.it, lester.expect
 
+local function check_normalform(expr, stage1, stage2, amountVars)
+	for i1,v1 in ipairs(expr) do
+		if i1 % 2 == 0 then
+			if v1 ~= stage1 then return false end
+		else
+			if #v1 ~= 2*amountVars-1 then return false end
+			for i2,v2 in ipairs(v1) do
+				if i2 % 2 == 0 then
+					if v2 ~= stage2 then return false end
+				else
+					if type(v2) == "string" then
+					elseif type(v2) == "table" then
+						if #v2 == 1 then
+							if type(v2[1]) ~= "string" then return false end
+						elseif #v2 == 2 then
+							if v2[1] ~= "not" then return false end
+							if type(v2[2]) ~= "string" then return false end
+						else
+							return false
+						end
+					end
+				end
+			end
+		end
+	end
+	return true
+end
 
 local function semantic_eq_expr_tables(e1, e2)
 	if     type(e1) == "table" and type(e2) == "table" then
@@ -28,7 +55,6 @@ local function semantic_eq_expr_tables(e1, e2)
 	end
 end
 
--- TODO write tests
 local function tab_eq(t1, t2)
 	for k,v in pairs(t1) do
 		if t2[k] ~= v then return false end
@@ -40,6 +66,48 @@ local function tab_eq(t1, t2)
 end
 
 describe('test', function()
+	describe('check_normalform', function()
+		describe('kdnf', function()
+			it('{{"a", "and", "b", "and", "c"}}', function()
+				local e = {{"a", "and", "b", "and", "c"}}
+				expect.truthy(check_normalform(e, "or", "and", 3))
+			end)
+			it('{"a", "and", "b", "and", "c"}', function()
+				local e = {"a", "and", "b", "and", "c"}
+				expect.falsy(check_normalform(e, "or", "and", 3))
+			end)
+			it('{{"a", "and", "c"}, "or", {"a", "and", "b", "and", "c"}}', function()
+				local e = {{"a", "and", "c", "and", {"not", "b"}}, "or", {"a", "and", "b", "and", "c"}}
+				expect.truthy(check_normalform(e, "or", "and", 3))
+			end)
+		end)
+		describe('kknf', function()
+			it('{{"a", "or", "b", "or", "c"}}', function()
+				local e = {{"a", "or", "b", "or", "c"}}
+				expect.truthy(check_normalform(e, "and", "or", 3))
+			end)
+			it('{"a", "or", "b", "or", "c"}', function()
+				local e = {"a", "or", "b", "or", "c"}
+				expect.falsy(check_normalform(e, "and", "or", 3))
+			end)
+			it('{{"a", "or", "c"}, "and", {"a", "or", "b", "or", "c"}}', function()
+				local e = {{"a", "or", "c", "or", {"not", "b"}}, "and", {"a", "or", "b", "or", "c"}}
+				expect.truthy(check_normalform(e, "and", "or", 3))
+			end)
+		end)
+	end)
+	describe('tab_eq', function()
+		it('{a=true, b=false, c=true} {a=nil, c=true, b=false}', function()
+			local t1 = {a=true, b=false, c=true}
+			local t2 = {a=nil, c=true, b=false}
+			expect.falsy(tab_eq(t1, t2))
+		end)
+		it('{a=true, b=false, c=true} {a=true, c=true, b=false}', function()
+			local t1 = {a=true, b=false, c=true}
+			local t2 = {a=true, c=true, b=false}
+			expect.truthy(tab_eq(t1, t2))
+		end)
+	end)
 	describe('sem eq', function()
 		it('{} and {}', function()
 			local e1 = {}
@@ -350,26 +418,6 @@ describe('expr', function()
 			end)
 		end
 	end)
-	-- TODO how to check strings for semantic equivalence?
-	describe("expr2str", function()
-		-- for _,v in ipairs(tries) do
-		-- 	it(v.str, function()
-		-- 		local e = expression{expr=v.expr}
-		-- 		e:expr2str()
-		-- 		expect.equal(e.str:gsub(" ", ""):gsub("^%(", ""):gsub("%)$", ""), v.str)
-		-- 	end)
-		-- end
-	end)
-	-- is checked via 2table
-	describe("eval", function()
-		-- for _,v in ipairs(tries) do
-		-- 	it(v.str, function()
-		-- 		local e = expression{str=v.str}
-		-- 		e:str2expr()
-		-- 		expect.truthy(semantic_eq_expr_tables(e.expr, v.expr))
-		-- 	end)
-		-- end
-	end)
 	describe("expr2table", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
@@ -394,7 +442,8 @@ describe('expr', function()
 			it(v.str, function()
 				local e = expression{table=v.table, vars=v.vars}
 				e:table2knfexpr()
-				expect.truthy(e:equiv(expression{expr=v.knf, vars=v.vars}))
+				expect.truthy(e:equiv(expression{expr=v.expr, vars=v.vars}))
+				expect.truthy(check_normalform(e.expr, "and", "or", #e.vars))
 			end)
 		end
 	end)
@@ -403,7 +452,8 @@ describe('expr', function()
 			it(v.str, function()
 				local e = expression{table=v.table, vars=v.vars}
 				e:table2dnfexpr()
-				expect.truthy(e:equiv(expression{expr=v.dnf, vars=v.vars}))
+				expect.truthy(e:equiv(expression{expr=v.expr, vars=v.vars}))
+				expect.truthy(check_normalform(e.expr, "or", "and", #e.vars))
 			end)
 		end
 	end)
