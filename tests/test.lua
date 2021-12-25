@@ -28,8 +28,16 @@ local function semantic_eq_expr_tables(e1, e2)
 	end
 end
 
--- Customize lester configuration.
--- lester.show_traceback = false
+-- TODO write tests
+local function tab_eq(t1, t2)
+	for k,v in pairs(t1) do
+		if t2[k] ~= v then return false end
+	end
+	for k,v in pairs(t2) do
+		if t1[k] ~= v then return false end
+	end
+	return true
+end
 
 describe('test', function()
 	describe('sem eq', function()
@@ -152,92 +160,275 @@ end)
 local expression_utils = require("cond_expression_utils")
 describe('utils', function()
 	describe("permute", function()
-		it("dummy", function()
-			expect.truthy(true)
+		it("{a}", function()
+			local cmp = {
+				{a=false},
+				{a=true}
+			}
+			for p in expression_utils.permute({"a"}) do
+				local j = nil
+				for i,v in ipairs(cmp) do
+					if tab_eq(v, p) then
+						j = i
+					end
+				end
+				expect.exist(j)
+				table.remove(cmp, j)
+			end
+			expect.equal(#cmp, 0)
+		end)
+		it("{a,b}", function()
+			local cmp = {
+				{a=false, b=false},
+				{a=false, b=true},
+				{a=true, b=false},
+				{a=true, b=true}
+			}
+			for p in expression_utils.permute({"a", "b"}) do
+				local j = nil
+				for i,v in ipairs(cmp) do
+					if tab_eq(v, p) then
+						j = i
+					end
+				end
+				expect.exist(j)
+				table.remove(cmp, j)
+			end
+			expect.equal(#cmp, 0)
+		end)
+		it("{a,b,c}", function()
+			local cmp = {
+				{a=false, b=false, c=false},
+				{a=false, b=false, c=true},
+				{a=false, b=true, c=false},
+				{a=false, b=true, c=true},
+				{a=true, b=false, c=false},
+				{a=true, b=false, c=true},
+				{a=true, b=true, c=false},
+				{a=true, b=true, c=true}
+			}
+			for p in expression_utils.permute({"a", "b", "c"}) do
+				local j = nil
+				for i,v in ipairs(cmp) do
+					if tab_eq(v, p) then
+						j = i
+					end
+				end
+				expect.exist(j)
+				table.remove(cmp, j)
+			end
+			expect.equal(#cmp, 0)
 		end)
 	end)
 	describe("bool2str", function()
-		it("dummy", function()
-			expect.truthy(true)
+		it("true", function()
+			expect.equal("1", expression_utils.bool2str(true))
+		end)
+		it("false", function()
+			expect.equal("0", expression_utils.bool2str(false))
 		end)
 	end)
 	describe("set2list", function()
-		it("dummy", function()
-			expect.truthy(true)
+		it("{a='1', b='1', c='1'}", function()
+			local cmp = {"a", "b", "c"}
+			table.sort(cmp)
+			local r = expression_utils.set2list({a="1", b="1", c="1"})
+			table.sort(r)
+			expect.truthy(tab_eq(cmp,r))
+		end)
+		it("{a='1', b='1', c=nil}", function()
+			local cmp = {"a", "b"}
+			table.sort(cmp)
+			local r = expression_utils.set2list({a="1", b="1", c=nil})
+			table.sort(r)
+			expect.truthy(tab_eq(cmp,r))
+		end)
+		it("{[0]='1', [10]=nil, [3]='1'}", function()
+			local cmp = {0, 3}
+			table.sort(cmp)
+			local r = expression_utils.set2list({[0]='1', [10]=nil, [3]='1'})
+			table.sort(r)
+			expect.truthy(tab_eq(cmp,r))
 		end)
 	end)
 	describe("list2set", function()
-		it("dummy", function()
-			expect.truthy(true)
+		it("{'a', 'b', 'c'}", function()
+			expect.truthy(
+				tab_eq(expression_utils.list2set({"a", "b", "c"}),
+				{a="1", b="1", c="1"})
+			)
+		end)
+		it("{'a', 'c'}", function()
+			expect.truthy(
+				tab_eq(expression_utils.list2set({"a", "c"}),
+				{a="1", c="1"})
+			)
+		end)
+		it("{'1', '2'}", function()
+			expect.truthy(
+				tab_eq(expression_utils.list2set({1, 2}),
+				{[1]="1", [2]="1"})
+			)
 		end)
 	end)
 	describe("union", function()
-		it("dummy", function()
-			expect.truthy(true)
+		it('{a="1", c="1"}, {a="1", b="1", d="1"}', function()
+			local s1 = {a="1", c="1"}
+			local s2 = {a="1", b="1", d="1"}
+			local r = {a="1", b="1", c="1", d="1"}
+			expect.truthy(tab_eq(expression_utils.union(s1, s2), r))
 		end)
-	end)
-	describe("table_print", function()
-		it("dummy", function()
-			expect.truthy(true)
+		it('{a="1", c=nil}, {a="1", b="1", c="1"}', function()
+			local s1 = {a="1", c=nil}
+			local s2 = {a="1", b="1", c="1"}
+			local r = {a="1", b="1", c="1"}
+			expect.truthy(tab_eq(expression_utils.union(s1, s2), r))
 		end)
 	end)
 end)
 
 local expression = require("cond_expression")
 describe('expr', function()
+	local tries = {}
+	local t = {
+		["000"] = "0",
+		["001"] = "0",
+		["010"] = "0",
+		["011"] = "1",
+		["100"] = "1",
+		["101"] = "1",
+		["110"] = "1",
+		["111"] = "1",
+	}
+	local tr = {
+		str="a+b*c",
+		expr={"a", "+", {"b", "*", "c"}},
+		knf={{"a", "or", "b", "or", {"not", "c"}}, "and", {"a", "or", "b", "or", "c"}, "and", {"a", "or", {"not", "b"}, "or", "c"}},
+		dnf={{{"not", "a"}, "and", "b", "and", "c"}, "or", {"a", "and", {"not", "b"}, "and", {"not", "c"}}, "or", {"a", "and", {"not", "b"}, "and", "c"}, "or", {"a", "and", "b", "and", {"not", "c"}}, "or", {"a", "or", "b", "or", "c"}},
+		table=t,
+		vars={"a", "b", "c"}
+	}
+	table.insert(tries, tr)
+	t = {
+		["000"] = "0",
+		["001"] = "0",
+		["010"] = "0",
+		["011"] = "1",
+		["100"] = "0",
+		["101"] = "1",
+		["110"] = "0",
+		["111"] = "1",
+	}
+	tr = {
+		str="(a+b)*c",
+		expr={{"a", "+", "b"}, "*", "c"},
+		knf={{"a", "or", "b", "or", "c"}, "and", {"a", "or", "b", "or", {"not", "c"}}, "and", {"a", "or", {"not", "b"}, "or", "c"}, "and", {{"not", "a"}, "or", "b", "or", "c"}, "and", {{"not", "a"}, "or", {"not", "b"}, "or", "c"}},
+		dnf={{{"not", "a"}, "and", "b", "and", "c"}, "or", {"a", "and", {"not", "b"}, "and", "c"}, "or", {"a", "and", "b", "and", "c"}},
+		table=t,
+		vars={"a", "b", "c"}
+	}
+	table.insert(tries, tr)
 	describe("new", function()
-		it("new", function()
-			expect.truthy(true)
+		it("{}", function()
+			expect.truthy(tab_eq(expression:new{}, {}))
 		end)
 	end)
 	describe("__call", function()
-		it("new", function()
-			expect.truthy(true)
+		it("{}", function()
+			expect.truthy(tab_eq(expression{}, {}))
+		end)
+		it("{str='a+b*c'}", function()
+			expect.truthy(tab_eq(expression{str="a+b*c"}, {str="a+b*c"}))
 		end)
 	end)
 	describe("str2expr", function()
-		it("new", function()
-			expect.truthy(true)
-		end)
+		for _,v in ipairs(tries) do
+			it(v.str, function()
+				local e = expression{str=v.str}
+				e:str2expr()
+				expect.truthy(semantic_eq_expr_tables(e.expr, v.expr))
+			end)
+		end
 	end)
+	-- TODO how to check strings for semantic equivalence?
 	describe("expr2str", function()
-		it("new", function()
-			expect.truthy(true)
-		end)
+		-- for _,v in ipairs(tries) do
+		-- 	it(v.str, function()
+		-- 		local e = expression{expr=v.expr}
+		-- 		e:expr2str()
+		-- 		expect.equal(e.str:gsub(" ", ""):gsub("^%(", ""):gsub("%)$", ""), v.str)
+		-- 	end)
+		-- end
 	end)
+	-- is checked via 2table
 	describe("eval", function()
-		it("new", function()
-			expect.truthy(true)
-		end)
+		-- for _,v in ipairs(tries) do
+		-- 	it(v.str, function()
+		-- 		local e = expression{str=v.str}
+		-- 		e:str2expr()
+		-- 		expect.truthy(semantic_eq_expr_tables(e.expr, v.expr))
+		-- 	end)
+		-- end
 	end)
 	describe("expr2table", function()
-		it("new", function()
-			expect.truthy(true)
-		end)
+		for _,v in ipairs(tries) do
+			it(v.str, function()
+				local e = expression{expr=v.expr}
+				e:expr2vars()
+				e:expr2table()
+				expect.truthy(semantic_eq_expr_tables(e.table, v.table))
+			end)
+		end
 	end)
 	describe("expr2vars", function()
-		it("new", function()
-			expect.truthy(true)
-		end)
+		for _,v in ipairs(tries) do
+			it(v.str, function()
+				local e = expression{expr=v.expr}
+				e:expr2vars()
+				expect.truthy(semantic_eq_expr_tables(e.vars, v.vars))
+			end)
+		end
 	end)
 	describe("table2knfexpr", function()
-		it("new", function()
-			expect.truthy(true)
-		end)
+		for _,v in ipairs(tries) do
+			it(v.str, function()
+				local e = expression{table=v.table, vars=v.vars}
+				e:table2knfexpr()
+				expect.truthy(e:equiv(expression{expr=v.knf, vars=v.vars}))
+			end)
+		end
 	end)
 	describe("table2dnfexpr", function()
-		it("new", function()
-			expect.truthy(true)
-		end)
+		for _,v in ipairs(tries) do
+			it(v.str, function()
+				local e = expression{table=v.table, vars=v.vars}
+				e:table2dnfexpr()
+				expect.truthy(e:equiv(expression{expr=v.dnf, vars=v.vars}))
+			end)
+		end
 	end)
 	describe("equiv", function()
-		it("new", function()
-			expect.truthy(true)
+		it('{"a", "and", "b"} and {"b", "and", "a"}', function()
+			local e1 = expression{expr={"a", "and", "b"}, vars={"a", "b"}}
+			local e2 = expression{expr={"b", "and", "a"}, vars={"a", "b"}}
+			expect.truthy(e1:equiv(e2))
 		end)
 	end)
-	describe("print_truthtable", function()
-		it("new", function()
-			expect.truthy(true)
+	describe("read", function()
+		it("test1.tab", function()
+			local e = expression.read("test1.tab")
+			expect.equal(e["y"].vars, {"a", "b", "c"})
+			local t = {
+				["000"] = "0",
+				["001"] = "1",
+				["010"] = "0",
+				["011"] = "1",
+				["100"] = "0",
+				["101"] = "1",
+				["110"] = "1",
+				["111"] = "1",
+			}
+			expect.equal(e["y"].table, t)
 		end)
 	end)
 end)
