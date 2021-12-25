@@ -1,7 +1,6 @@
 local _M = {}
 
 local utils      = require("cond_expression_utils")
-local expression = require("cond_expression")
 
 local function expand(x)
 	local function foo(x, i, acc)
@@ -157,8 +156,7 @@ local function minimize(t)
 	return nil
 end
 
-function _M.handle_knf(self)
-	local tab,vars = self.tab, self.vars
+function _M.handle_knf(tab,vars)
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "0" then t[k] = true end
@@ -188,13 +186,12 @@ function _M.handle_knf(self)
 			table.insert(e, "and")
 		end
 		table.remove(e)
-		table.insert(ret, expression{expr=e, table=utils.shallow_copy(self.tab)})
+		table.insert(ret, e)
 	end
-	return table.unpack(ret) or nil
+	return ret
 end
 
-function _M.handle_dnf(self)
-	local tab,vars = self.tab, self.vars
+function _M.handle_dnf(tab,vars)
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "1" then t[k] = true end
@@ -224,9 +221,9 @@ function _M.handle_dnf(self)
 			table.insert(e, "or")
 		end
 		table.remove(e)
-		table.insert(ret, expression{expr=e, table=utils.shallow_copy(self.tab)})
+		table.insert(ret, e)
 	end
-	return table.unpack(ret) or nil
+	return ret
 end
 
 -- TODO for test -> HOW test this, semantic equiv isn't enough, how would one test if this is minimal?
