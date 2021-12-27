@@ -1,7 +1,7 @@
 local lester = require 'lester'
 local describe, it, expect = lester.describe, lester.it, lester.expect
 
-local function check_normalform(expr, stage1, stage2, amountVars)
+local function check_canonical_normalform(expr, stage1, stage2, amountVars)
 	for i1,v1 in ipairs(expr) do
 		if i1 % 2 == 0 then
 			if v1 ~= stage1 then return false end
@@ -70,29 +70,29 @@ describe('test', function()
 		describe('kdnf', function()
 			it('{{"a", "and", "b", "and", "c"}}', function()
 				local e = {{"a", "and", "b", "and", "c"}}
-				expect.truthy(check_normalform(e, "or", "and", 3))
+				expect.truthy(check_canonical_normalform(e, "or", "and", 3))
 			end)
 			it('{"a", "and", "b", "and", "c"}', function()
 				local e = {"a", "and", "b", "and", "c"}
-				expect.falsy(check_normalform(e, "or", "and", 3))
+				expect.falsy(check_canonical_normalform(e, "or", "and", 3))
 			end)
 			it('{{"a", "and", "c"}, "or", {"a", "and", "b", "and", "c"}}', function()
 				local e = {{"a", "and", "c", "and", {"not", "b"}}, "or", {"a", "and", "b", "and", "c"}}
-				expect.truthy(check_normalform(e, "or", "and", 3))
+				expect.truthy(check_canonical_normalform(e, "or", "and", 3))
 			end)
 		end)
 		describe('kknf', function()
 			it('{{"a", "or", "b", "or", "c"}}', function()
 				local e = {{"a", "or", "b", "or", "c"}}
-				expect.truthy(check_normalform(e, "and", "or", 3))
+				expect.truthy(check_canonical_normalform(e, "and", "or", 3))
 			end)
 			it('{"a", "or", "b", "or", "c"}', function()
 				local e = {"a", "or", "b", "or", "c"}
-				expect.falsy(check_normalform(e, "and", "or", 3))
+				expect.falsy(check_canonical_normalform(e, "and", "or", 3))
 			end)
 			it('{{"a", "or", "c"}, "and", {"a", "or", "b", "or", "c"}}', function()
 				local e = {{"a", "or", "c", "or", {"not", "b"}}, "and", {"a", "or", "b", "or", "c"}}
-				expect.truthy(check_normalform(e, "and", "or", 3))
+				expect.truthy(check_canonical_normalform(e, "and", "or", 3))
 			end)
 		end)
 	end)
@@ -439,7 +439,7 @@ describe('expr', function()
 				local e = expression{table=v.table, vars=v.vars}
 				e:table2knfexpr()
 				expect.truthy(e:equiv(expression{expr=v.expr, vars=v.vars}))
-				expect.truthy(check_normalform(e.expr, "and", "or", #e.vars))
+				expect.truthy(check_canonical_normalform(e.expr, "and", "or", #e.vars))
 			end)
 		end
 	end)
@@ -449,7 +449,35 @@ describe('expr', function()
 				local e = expression{table=v.table, vars=v.vars}
 				e:table2dnfexpr()
 				expect.truthy(e:equiv(expression{expr=v.expr, vars=v.vars}))
-				expect.truthy(check_normalform(e.expr, "or", "and", #e.vars))
+				expect.truthy(check_canonical_normalform(e.expr, "or", "and", #e.vars))
+			end)
+		end
+	end)
+	-- TODO only tests for equivalence, not for structure and not for minimal
+	describe("table2knfmin", function()
+		for _,v in ipairs(tries) do
+			it(v.str, function()
+				local e = expression{table=v.table, vars=v.vars}
+				local r = {e:table2knfmin()}
+				expect.truthy(#r >= 1)
+				for _,v2 in ipairs(r) do
+					v2:expr2vars()
+					expect.truthy(v2:equiv(expression{expr=v.expr, vars=v.vars}))
+				end
+			end)
+		end
+	end)
+	-- TODO only tests for equivalence, not for structure and not for minimal
+	describe("table2dnfmin", function()
+		for _,v in ipairs(tries) do
+			it(v.str, function()
+				local e = expression{table=v.table, vars=v.vars}
+				local r = {e:table2dnfmin()}
+				expect.truthy(#r >= 1)
+				for _,v2 in ipairs(r) do
+					v2:expr2vars()
+					expect.truthy(v2:equiv(expression{expr=v.expr, vars=v.vars}))
+				end
 			end)
 		end
 	end)
@@ -483,7 +511,6 @@ end)
 -- MINIMIZATION --
 ------------------
 -- TODO for test -> HOW test this, semantic equiv isn't enough, how would one test if this is minimal?
--- TODO no testing while duplicates are present
 -- local tab1 = {
 -- 	["000"] = "0",
 -- 	["001"] = "0",
