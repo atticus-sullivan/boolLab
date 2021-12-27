@@ -15,8 +15,8 @@ local function expand(x)
 		end
 	end
 	local ret = {}
-	for k,_ in pairs(x) do
-		foo(k, 1, ret)
+	for _,v in pairs(x) do
+		foo(v, 1, ret)
 	end
 	return ret
 end
@@ -76,35 +76,38 @@ local function combine(x1,x2)
 	if diff > 1 then return nil else return ret end
 end
 
--- TODO from rosetta code
---returns the powerset of s, out of order.
-local function powerset(s, start)
-  start = start or 1
-  if(start > #s) then return {{}} end
-  local ret = powerset(s, start + 1)
-  for i = 1, #ret do
-    ret[#ret + 1] = {s[start], unpack(ret[i])}
-  end
-  return ret
-end
+local function perm(iterable, r)
+	-- iterable is not to be modified from the outside
+	local function foo(iterable, r)
+		local pool = utils.shallow_copy(iterable)
+		local n = #pool
+		if r > n then return end
+		local indices = {}
+		for i=1,r do indices[i] = i end
 
--- TODO remove duplicates
-local function perm(set, len)
-	local function _perm(set, len, acc)
-		for k,_ in pairs(set) do
-			set[k] = nil
-			acc[k] = true
-			if utils.set_size(acc) == len
-			then
-				coroutine.yield(acc)
-			else
-				_perm(set, len, acc)
+		local ret = {}
+		for i,v in ipairs(indices) do ret[i] = pool[v] end
+		coroutine.yield(ret)
+
+		while true do
+			local globI = nil
+			for i=r,1,-1 do
+				if indices[i] ~= i+n-r then globI = i break end
 			end
-			acc[k] = nil
-			set[k] = true
+			if not globI then return end
+
+			indices[globI] = indices[globI] + 1
+			for j=globI+1,r do
+				indices[j] = indices[j-1] + 1
+			end
+
+			ret = {}
+			for i,v in ipairs(indices) do ret[i] = pool[v] end
+			coroutine.yield(ret)
 		end
 	end
-	return coroutine.wrap(function() _perm(set, len, {}) end)
+	iterable = utils.set2list(iterable)
+	return coroutine.wrap(function() foo(iterable, r) end)
 end
 
 local function minimize(t)
@@ -164,7 +167,7 @@ function _M.handle_knf(tab,vars)
 	local ret = {}
 	for _,m in ipairs(minimize(t)) do
 		local e = {}
-		for v1,_ in pairs(m) do
+		for _,v1 in pairs(m) do
 			local sub = {}
 			local i = 1
 			for v2 in v1:gmatch(".") do
@@ -199,7 +202,7 @@ function _M.handle_dnf(tab,vars)
 	local ret = {}
 	for _,m in ipairs(minimize(t)) do
 		local e = {}
-		for v1,_ in pairs(m) do
+		for _,v1 in pairs(m) do
 			local sub = {}
 			local i = 1
 			for v2 in v1:gmatch(".") do
@@ -225,5 +228,37 @@ function _M.handle_dnf(tab,vars)
 	end
 	return ret
 end
+
+-- local tab = {
+-- 	["000"] = "0",
+-- 	["001"] = "0",
+-- 	["010"] = "0",
+-- 	["011"] = "1",
+-- 	["100"] = "1",
+-- 	["101"] = "1",
+-- 	["110"] = "0",
+-- 	["111"] = "1",
+-- }
+-- local r = _M.handle_knf(tab, {"a", "b", "c"})
+-- for _,v in ipairs(r) do
+-- 	utils.table_print(v)
+-- end
+
+-- print()
+
+-- tab = {
+-- 	["000"] = "0",
+-- 	["001"] = "1",
+-- 	["010"] = "1",
+-- 	["011"] = "0",
+-- 	["100"] = "0",
+-- 	["101"] = "0",
+-- 	["110"] = "1",
+-- 	["111"] = "0",
+-- }
+-- r = _M.handle_knf(tab, {"a", "b", "c"})
+-- for _,v in ipairs(r) do
+-- 	utils.table_print(v)
+-- end
 
 return _M
