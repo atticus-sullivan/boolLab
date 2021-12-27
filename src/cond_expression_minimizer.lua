@@ -1,6 +1,10 @@
+--- Provides minimization according to `quine-mcCluskey`
+-- You most probably want to use this from the @{cond_expression} module
+-- @alias minimizer
+
 local _M = {}
 
-local utils      = require("cond_expression_utils")
+local utils = require("cond_expression_utils")
 
 local function expand(x)
 	local function foo(x, i, acc)
@@ -159,7 +163,14 @@ local function minimize(t)
 	return nil
 end
 
-function _M.handle_knf(tab,vars)
+--- find minimal KNF based on table based on `quine-mcCluskey` algorithm
+-- This function uses a table as base for the creation of a minimal KNF
+-- @tparam {{"0"|"1"}*->{"0"|"1"}} tab table with assignment as keys
+-- @tparam {string} vars array of used variables (order must correspond to the
+-- tab keys)
+-- @treturn {exprTable} a list of expression representing tables (no
+-- expression objects)
+function _M.to_knf(tab,vars)
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "0" then t[k] = true end
@@ -194,7 +205,14 @@ function _M.handle_knf(tab,vars)
 	return ret
 end
 
-function _M.handle_dnf(tab,vars)
+--- find minimal DNF based on table based on `quine-mcCluskey` algorithm
+-- This function uses a table as base for the creation of a minimal DNF
+-- @tparam {{"0"|"1"}*->{"0"|"1"}} tab table with assignment as keys
+-- @tparam {string} vars array of used variables (order must correspond to the
+-- tab keys)
+-- @treturn {exprTable} a list of expression representing tables (no
+-- expression objects)
+function _M.to_dnf(tab,vars)
 	local t = {}
 	for k,v in pairs(tab) do
 		if v == "1" then t[k] = true end
@@ -239,7 +257,7 @@ end
 -- 	["110"] = "0",
 -- 	["111"] = "1",
 -- }
--- local r = _M.handle_knf(tab, {"a", "b", "c"})
+-- local r = _M.to_knf(tab, {"a", "b", "c"})
 -- for _,v in ipairs(r) do
 -- 	utils.table_print(v)
 -- end
@@ -256,7 +274,7 @@ end
 -- 	["110"] = "1",
 -- 	["111"] = "0",
 -- }
--- r = _M.handle_knf(tab, {"a", "b", "c"})
+-- r = _M.to_knf(tab, {"a", "b", "c"})
 -- for _,v in ipairs(r) do
 -- 	utils.table_print(v)
 -- end

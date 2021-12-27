@@ -1,4 +1,4 @@
-file = {"./", exclude={"main.lua"}}
+file = {"./src/", exclude={"main.lua"}}
 project = "boolLab"
 format = "markdown"
 readme = "./README.md"

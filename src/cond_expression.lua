@@ -1,6 +1,6 @@
 --- Provides some conditional expression tools in Lua.
 -- Before calling a function, make sure you fullfill the stated prerequisites,
--- otherwise assert fill faill -> you may used pcall to wrap the call
+-- otherwise assert will fail (assert) -> you may used pcall to wrap the call
 -- @alias expression
 
 local lpeg = require"lpeg"
@@ -256,7 +256,7 @@ end
 function expression:table2knfmin()
 	assert(type(self.vars) == "table", string.format("vars has to be set for minimizing"))
 	assert(type(self.table) == "table", "table has to be set for minimizing")
-	local r = minimizer.handle_knf(self.table, self.vars)
+	local r = minimizer.to_knf(self.table, self.vars)
 	for i,v in ipairs(r) do
 		r[i] = expression:new{expr=v}
 	end
@@ -269,7 +269,7 @@ end
 function expression:table2dnfmin()
 	assert(type(self.vars) == "table", string.format("vars has to be set for minimizing"))
 	assert(type(self.table) == "table", "table has to be set for minimizing")
-	local r = minimizer.handle_dnf(self.table, self.vars)
+	local r = minimizer.to_dnf(self.table, self.vars)
 	for i,v in ipairs(r) do
 		r[i] = expression:new{expr=v}
 	end
