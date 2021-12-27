@@ -2,13 +2,13 @@
 
 local _M = {}
 
---- Creates a shallow copy of a table (array part).
+--- Creates a shallow copy of a table (array+map part).
 -- Might use penlight for that thing
 -- @tparam table t the table to copy
 -- @treturn table copy of t
 function _M.shallow_copy(t)
 	local r = {}
-	for i,v in ipairs(t) do
+	for i,v in pairs(t) do
 		r[i] = v
 	end
 	return r
@@ -76,6 +76,24 @@ function _M.list2set(list)
 	return set
 end
 
+function _M.set_size(s)
+	local ret = 0
+	for _,_ in pairs(s) do
+		ret = ret + 1
+	end
+	return ret
+end
+
+function _M.tab_eq(s1, s2)
+	for k,v in pairs(s1) do
+		if s2[k] ~= v then return false end
+	end
+	for k,v in pairs(s2) do
+		if s1[k] ~= v then return false end
+	end
+	return true
+end
+
 --- Perform a union on two sets.
 -- maybe replace with penlight
 -- sets are tables with the keys as values
@@ -101,6 +119,21 @@ function _M.table_print(t)
 		if type(t) ~= "table" then io.write(tostring(t)) return end
 		io.write("{")
 		for _,v in ipairs(t) do
+			table_print_exec(v)
+			io.write(", ")
+		end
+		io.write("}")
+	end
+	table_print_exec(t)
+	print()
+end
+
+function _M.table_print_pairs(t)
+	local function table_print_exec(t)
+		if type(t) ~= "table" then io.write(tostring(t)) return end
+		io.write("{")
+		for k,v in pairs(t) do
+			io.write(tostring(k), "->")
 			table_print_exec(v)
 			io.write(", ")
 		end

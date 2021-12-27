@@ -7,6 +7,7 @@ local lpeg = require"lpeg"
 local utils = require"cond_expression_utils"
 local tabular = require"tabular"
 local csv = require"csv"("|")
+local minimizer = require"cond_expression_minimizer"
 
 -- Lexical Elements
 local Space = lpeg.S(" \n\t")^0
@@ -247,6 +248,32 @@ function expression:equiv(other)
 		if self:eval(p) ~= other:eval(p) then return false end
 	end
 	return true
+end
+
+--- Convert ro minimized knf (Quine-McCluskey) based on table
+-- Note that `self` stays unchanged -> return values
+-- @return tuple of expressions (in some cases multiple exprs are possible in minimization)
+function expression:table2knfmin()
+	assert(type(self.vars) == "table", string.format("vars has to be set for minimizing"))
+	assert(type(self.table) == "table", "table has to be set for minimizing")
+	local r = minimizer.handle_knf(self.table, self.vars)
+	for i,v in ipairs(r) do
+		r[i] = expression{expr=v}
+	end
+	return table.unpack(r)
+end
+
+--- Convert ro minimized dnf (Quine-McCluskey) based on table
+-- Note that `self` stays unchanged -> return values
+-- @return tuple of expressions (in some cases multiple exprs are possible in minimization)
+function expression:table2dnfmin()
+	assert(type(self.vars) == "table", string.format("vars has to be set for minimizing"))
+	assert(type(self.table) == "table", "table has to be set for minimizing")
+	local r = minimizer.handle_dnf(self.table, self.vars)
+	for i,v in ipairs(r) do
+		r[i] = expression{expr=v}
+	end
+	return table.unpack(r)
 end
 
 --- Print a truthtable of expressions.
