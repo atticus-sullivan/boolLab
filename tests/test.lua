@@ -399,16 +399,16 @@ describe('expr', function()
 	end)
 	describe("__call", function()
 		it("{}", function()
-			expect.truthy(tab_eq(expression{}, {}))
+			expect.truthy(tab_eq(expression:new{}, {}))
 		end)
 		it("{str='a+b*c'}", function()
-			expect.truthy(tab_eq(expression{str="a+b*c"}, {str="a+b*c"}))
+			expect.truthy(tab_eq(expression:new{str="a+b*c"}, {str="a+b*c"}))
 		end)
 	end)
 	describe("str2expr", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression{str=v.str}
+				local e = expression:new{str=v.str}
 				e:str2expr()
 				expect.truthy(semantic_eq_expr_tables(e.expr, v.expr))
 			end)
@@ -417,7 +417,7 @@ describe('expr', function()
 	describe("expr2table", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression{expr=v.expr}
+				local e = expression:new{expr=v.expr}
 				e:expr2vars()
 				e:expr2table()
 				expect.truthy(semantic_eq_expr_tables(e.table, v.table))
@@ -427,7 +427,7 @@ describe('expr', function()
 	describe("expr2vars", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression{expr=v.expr}
+				local e = expression:new{expr=v.expr}
 				e:expr2vars()
 				expect.truthy(semantic_eq_expr_tables(e.vars, v.vars))
 			end)
@@ -436,9 +436,9 @@ describe('expr', function()
 	describe("table2knfexpr", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression{table=v.table, vars=v.vars}
+				local e = expression:new{table=v.table, vars=v.vars}
 				e:table2knfexpr()
-				expect.truthy(e:equiv(expression{expr=v.expr, vars=v.vars}))
+				expect.truthy(e:equiv(expression:new{expr=v.expr, vars=v.vars}))
 				expect.truthy(check_canonical_normalform(e.expr, "and", "or", #e.vars))
 			end)
 		end
@@ -446,9 +446,9 @@ describe('expr', function()
 	describe("table2dnfexpr", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression{table=v.table, vars=v.vars}
+				local e = expression:new{table=v.table, vars=v.vars}
 				e:table2dnfexpr()
-				expect.truthy(e:equiv(expression{expr=v.expr, vars=v.vars}))
+				expect.truthy(e:equiv(expression:new{expr=v.expr, vars=v.vars}))
 				expect.truthy(check_canonical_normalform(e.expr, "or", "and", #e.vars))
 			end)
 		end
@@ -457,12 +457,12 @@ describe('expr', function()
 	describe("table2knfmin", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression{table=v.table, vars=v.vars}
+				local e = expression:new{table=v.table, vars=v.vars}
 				local r = {e:table2knfmin()}
 				expect.truthy(#r >= 1)
 				for _,v2 in ipairs(r) do
 					v2:expr2vars()
-					expect.truthy(v2:equiv(expression{expr=v.expr, vars=v.vars}))
+					expect.truthy(v2:equiv(expression:new{expr=v.expr, vars=v.vars}))
 				end
 			end)
 		end
@@ -471,20 +471,20 @@ describe('expr', function()
 	describe("table2dnfmin", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression{table=v.table, vars=v.vars}
+				local e = expression:new{table=v.table, vars=v.vars}
 				local r = {e:table2dnfmin()}
 				expect.truthy(#r >= 1)
 				for _,v2 in ipairs(r) do
 					v2:expr2vars()
-					expect.truthy(v2:equiv(expression{expr=v.expr, vars=v.vars}))
+					expect.truthy(v2:equiv(expression:new{expr=v.expr, vars=v.vars}))
 				end
 			end)
 		end
 	end)
 	describe("equiv", function()
 		it('{"a", "and", "b"} and {"b", "and", "a"}', function()
-			local e1 = expression{expr={"a", "and", "b"}, vars={"a", "b"}}
-			local e2 = expression{expr={"b", "and", "a"}, vars={"a", "b"}}
+			local e1 = expression:new{expr={"a", "and", "b"}, vars={"a", "b"}}
+			local e2 = expression:new{expr={"b", "and", "a"}, vars={"a", "b"}}
 			expect.truthy(e1:equiv(e2))
 		end)
 	end)

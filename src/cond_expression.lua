@@ -49,9 +49,9 @@ function expression:new(o) -- key/value passing
 end
 
 --- new can be called via `expression(o)` as well
+-- UPDATE: Currently not working
 -- @see expression:new
 expression.__call = function(self, o) return self:new(o) end
-setmetatable(expression, expression)
 
 --- string to expression.
 -- parses the internally stored string (`str`) and stores the result in the internal `expr` field
@@ -258,7 +258,7 @@ function expression:table2knfmin()
 	assert(type(self.table) == "table", "table has to be set for minimizing")
 	local r = minimizer.handle_knf(self.table, self.vars)
 	for i,v in ipairs(r) do
-		r[i] = expression{expr=v}
+		r[i] = expression:new{expr=v}
 	end
 	return table.unpack(r)
 end
@@ -271,7 +271,7 @@ function expression:table2dnfmin()
 	assert(type(self.table) == "table", "table has to be set for minimizing")
 	local r = minimizer.handle_dnf(self.table, self.vars)
 	for i,v in ipairs(r) do
-		r[i] = expression{expr=v}
+		r[i] = expression:new{expr=v}
 	end
 	return table.unpack(r)
 end
