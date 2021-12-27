@@ -126,7 +126,7 @@ local function minimize(t)
 						t_new[c] = true
 						changed = true
 						used[k1],used[k2] = true,true
-						print("changed", c, k1, k2)
+						-- print("changed", c, k1, k2)
 					else
 						t_new[k1] = true
 					end
@@ -136,8 +136,8 @@ local function minimize(t)
 		for k,_ in pairs(used) do
 			if t_new[k] then t_new[k] = nil end
 		end
-		utils.table_print_pairs(t_new)
-		print()
+		-- utils.table_print_pairs(t_new)
+		-- print()
 		t = t_new
 	until not changed or utils.set_size(t) == 1
 
@@ -145,17 +145,17 @@ local function minimize(t)
 	for i=1,utils.set_size(t) do
 		for p in perm(t, i) do
 			local x = expand(p)
-			utils.table_print_pairs(p)
-			utils.table_print_pairs(x)
+			-- utils.table_print_pairs(p)
+			-- utils.table_print_pairs(x)
 			if utils.tab_eq(x, tab) then
-				print("matches")
+				-- print("matches")
 				table.insert(ret, utils.shallow_copy(p))
 			end
-			print()
+			-- print()
 		end
-		if #ret > 0 then utils.table_print_pairs(ret) return ret end
+		if #ret > 0 then return ret end
 	end
-	print("nothing found")
+	-- print("nothing found")
 	return nil
 end
 
