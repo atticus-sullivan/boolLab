@@ -34,6 +34,9 @@ local expression = {str=nil, expr=nil, table=nil, vars=nil} -- default values he
 -- This function takes a single table as argument with the following keys
 -- possible as parameters. Not all keys have to be set e.g providing the `str`
 -- suffices.
+--
+-- Can be valles via expression(o) as well
+--
 -- @tparam {str=string,expr,table={0,1}*->{0,1},vars:{string,...}} o table argument with **keys:**
 --
 -- - `str` is the string representation of the expression,
@@ -42,16 +45,13 @@ local expression = {str=nil, expr=nil, table=nil, vars=nil} -- default values he
 -- - `vars` is a lift of the variable names
 -- @return the expression object
 function expression:new(o) -- key/value passing
-	o = o or {}
-	setmetatable(o, self) -- use the same metatable for all objects
-	self.__index = self -- lookup in class if key is not found
-	return o
+	return setmetatable(o or {}, self) -- use the same metatable for all objects
 end
 
---- new can be called via `expression(o)` as well
--- UPDATE: Currently not working
+-- new can be called via `expression(o)` as well
 -- @see expression:new
-expression.__call = function(self, o) return self:new(o) end
+setmetatable(expression, {__call = expression.new}) -- call has to be in the metatable of exoression
+expression.__index = expression -- global index for all instances (exression is the metatable)
 
 --- string to expression.
 -- parses the internally stored string (`str`) and stores the result in the internal `expr` field
