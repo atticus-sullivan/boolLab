@@ -3,7 +3,7 @@
 all: test
 
 doc: $(wildcard src/*.lua)
-	ldoc -f markdown src/
+	ldoc -f markdown -p boolLab src/
 
 test:
 	cd tests && ./run_tests.sh

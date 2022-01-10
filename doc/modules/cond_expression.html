@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>ldoc</h1>
+<h1>boolLab</h1>
 
 
 <ul>
@@ -51,8 +51,7 @@
 
 <h1>Module <code>cond_expression</code></h1>
 <p>Provides some conditional expression tools in Lua.</p>
-<p>
- Before calling a function, make sure you fullfill the stated prerequisites,
+<p> Before calling a function, make sure you fullfill the stated prerequisites,
  otherwise assert will fail (assert) -> you may used pcall to wrap the call</p>
 
 
@@ -85,12 +84,12 @@
 	<tr>
 	<td class="name" nowrap><a href="#table2knfexpr">table2knfexpr (short)</a></td>
 	<td class="summary">convert table to a knf expression
- use `table` to create a knf expression stored in `expr`</td>
+ use <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> to create a knf expression stored in <code>expr</code></td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#table2dnfexpr">table2dnfexpr (short)</a></td>
 	<td class="summary">convert table to a dnf expression
- use `table` to create a dnf expression stored in `expr`</td>
+ use <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> to create a dnf expression stored in <code>expr</code></td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#equiv">equiv (other)</a></td>
@@ -99,12 +98,12 @@
 	<tr>
 	<td class="name" nowrap><a href="#table2knfmin">table2knfmin ()</a></td>
 	<td class="summary">Convert ro minimized knf (Quine-McCluskey) based on table
- Note that `self` stays unchanged -> return values</td>
+ Note that <code>self</code> stays unchanged -> return values</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#table2dnfmin">table2dnfmin ()</a></td>
 	<td class="summary">Convert ro minimized dnf (Quine-McCluskey) based on table
- Note that `self` stays unchanged -> return values</td>
+ Note that <code>self</code> stays unchanged -> return values</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#print_truthtable">print_truthtable (...)</a></td>
@@ -130,21 +129,26 @@
     <dd>
     Create a new expression.
  This function takes a single table as argument with the following keys
- possible as parameters. Not all keys have to be set e.g providing the `str`
- suffices.
-<p> Can be valles via expression(o) as well
+ possible as parameters. Not all keys have to be set e.g providing the <code>str</code>
+ suffices.</p>
 
+<p> Can be valles via expression(o) as well
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">o</span>
             <span class="types"><span class="type">{str=string,expr,table={0,1}*->{0,1},vars:{string,...}}</span></span>
-         table argument with **keys:**
-<p> - `str` is the string representation of the expression,
- - `expr` is the nested table representation (you should only tamper with that if you know what you're doing),
- - `table` is the representation of the truthtable inputString->out and
- - `vars` is a lift of the variable names
+
+<p> table argument with <strong>keys:</strong></p>
+
+<ul>
+    <li><code>str</code> is the string representation of the expression,</li>
+    <li><code>expr</code> is the nested table representation (you should only tamper with that if you know what you're doing),</li>
+    <li><a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> is the representation of the truthtable inputString->out and</li>
+    <li><code>vars</code> is a lift of the variable names</li>
+</ul>
+
         </li>
     </ul>
 
@@ -164,7 +168,7 @@
     </dt>
     <dd>
     string to expression.
- parses the internally stored string (`str`) and stores the result in the internal `expr` field
+ parses the internally stored string (<code>str</code>) and stores the result in the internal <code>expr</code> field
 
 
 
@@ -184,7 +188,7 @@
     </dt>
     <dd>
     expression to string.
- parses the internally stored expression (`expr`) and stores the result in the internal `str` field
+ parses the internally stored expression (<code>expr</code>) and stores the result in the internal <code>str</code> field
 
 
 
@@ -204,7 +208,7 @@
     </dt>
     <dd>
     evaluate the expression with a set of assignments.
- assigns vales to the variables and returns the result. If not all variables are assigned `true`/`false` this function will error
+ assigns vales to the variables and returns the result. If not all variables are assigned <code>true</code>/<code>false</code> this function will error
 
 
     <h3>Parameters:</h3>
@@ -218,11 +222,11 @@
     <h3>Returns:</h3>
     <ol>
 
-        the result of the evaluation -> `true`/`false`
+        the result of the evaluation -> <code>true</code>/<code>false</code>
     </ol>
 
     <h3>Raises:</h3>
-    `variable not set` and `assigns not true/false`
+    <code>variable not set</code> and <code>assigns not true/false</code>
 
 
 
@@ -233,7 +237,7 @@
     </dt>
     <dd>
     expression to table.
- create a truthtable for the stored `expr` and store it in `table` field
+ create a truthtable for the stored <code>expr</code> and store it in <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> field
 
 
 
@@ -254,7 +258,7 @@
     <dd>
     expression to vars.
  Collect the names of the variables used in the expression.
- The result is stored in the `vars` field as a set. This means that the real values are the keys of the table
+ The result is stored in the <code>vars</code> field as a set. This means that the real values are the keys of the table
 
 
 
@@ -274,14 +278,14 @@
     </dt>
     <dd>
     convert table to a knf expression
- use `table` to create a knf expression stored in `expr`
+ use <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> to create a knf expression stored in <code>expr</code>
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">short</span>
             <span class="types"><span class="type">boolean</span></span>
-         whether `and` and `or` or `+` and `*` should be used as operators
+         whether <code>and</code> and <code>or</code> or <code>+</code> and <code>*</code> should be used as operators
         </li>
     </ul>
 
@@ -301,14 +305,14 @@
     </dt>
     <dd>
     convert table to a dnf expression
- use `table` to create a dnf expression stored in `expr`
+ use <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> to create a dnf expression stored in <code>expr</code>
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">short</span>
             <span class="types"><span class="type">boolean</span></span>
-         whether `and` and `or` or `+` and `*` should be used as operators
+         whether <code>and</code> and <code>or</code> or <code>+</code> and <code>*</code> should be used as operators
         </li>
     </ul>
 
@@ -342,7 +346,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        `true` if all results match
+        <code>true</code> if all results match
     </ol>
 
 
@@ -355,7 +359,7 @@
     </dt>
     <dd>
     Convert ro minimized knf (Quine-McCluskey) based on table
- Note that `self` stays unchanged -> return values
+ Note that <code>self</code> stays unchanged -> return values
 
 
 
@@ -375,7 +379,7 @@
     </dt>
     <dd>
     Convert ro minimized dnf (Quine-McCluskey) based on table
- Note that `self` stays unchanged -> return values
+ Note that <code>self</code> stays unchanged -> return values
 
 
 
@@ -417,7 +421,7 @@
     <dd>
     Read a truthtable from file.
  Reads a truthtable from a csv-like file (sep is the | by default)
- Structure is `in1|in2|...||outName1|outName2`
+ Structure is <code>in1|in2|...||outName1|outName2</code>
 
 
     <h3>Parameters:</h3>
@@ -446,7 +450,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-01-10 18:50:46 </i>
+<i style="float:right;">Last updated 2022-01-10 19:32:22 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
