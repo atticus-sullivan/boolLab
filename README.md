@@ -17,6 +17,8 @@ For a description of these operations and conversions open `docs/index.html` in
 your browser.
 
 ## Requirements
+`lua5.4`
+
 All in all this lua lib does not have any requirements only if you want to build
 the documentation you'll need the `ldoc` lua lib.
 
