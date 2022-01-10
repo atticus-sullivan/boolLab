@@ -1,0 +1,453 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>ldoc</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>cond_expression</strong></li>
+  <li><a href="../modules/cond_expression_minimizer.html">cond_expression_minimizer</a></li>
+  <li><a href="../modules/cond_expression_utils.html">cond_expression_utils</a></li>
+  <li><a href="../modules/tabular.html">tabular</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>cond_expression</code></h1>
+<p>Provides some conditional expression tools in Lua.</p>
+<p>
+ Before calling a function, make sure you fullfill the stated prerequisites,
+ otherwise assert will fail (assert) -> you may used pcall to wrap the call</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#new">new (o)</a></td>
+	<td class="summary">Create a new expression.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#str2expr">str2expr ()</a></td>
+	<td class="summary">string to expression.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#expr2str">expr2str ()</a></td>
+	<td class="summary">expression to string.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#eval">eval (assignment)</a></td>
+	<td class="summary">evaluate the expression with a set of assignments.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#expr2table">expr2table ()</a></td>
+	<td class="summary">expression to table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#expr2vars">expr2vars ()</a></td>
+	<td class="summary">expression to vars.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#table2knfexpr">table2knfexpr (short)</a></td>
+	<td class="summary">convert table to a knf expression
+ use `table` to create a knf expression stored in `expr`</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#table2dnfexpr">table2dnfexpr (short)</a></td>
+	<td class="summary">convert table to a dnf expression
+ use `table` to create a dnf expression stored in `expr`</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#equiv">equiv (other)</a></td>
+	<td class="summary">Check expressions for semantic equivalence.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#table2knfmin">table2knfmin ()</a></td>
+	<td class="summary">Convert ro minimized knf (Quine-McCluskey) based on table
+ Note that `self` stays unchanged -> return values</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#table2dnfmin">table2dnfmin ()</a></td>
+	<td class="summary">Convert ro minimized dnf (Quine-McCluskey) based on table
+ Note that `self` stays unchanged -> return values</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#print_truthtable">print_truthtable (...)</a></td>
+	<td class="summary">Print a truthtable of expressions.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#read">read (fn)</a></td>
+	<td class="summary">Read a truthtable from file.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "new"></a>
+    <strong>new (o)</strong>
+    </dt>
+    <dd>
+    Create a new expression.
+ This function takes a single table as argument with the following keys
+ possible as parameters. Not all keys have to be set e.g providing the `str`
+ suffices.
+<p> Can be valles via expression(o) as well
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">o</span>
+            <span class="types"><span class="type">{str=string,expr,table={0,1}*->{0,1},vars:{string,...}}</span></span>
+         table argument with **keys:**
+<p> - `str` is the string representation of the expression,
+ - `expr` is the nested table representation (you should only tamper with that if you know what you're doing),
+ - `table` is the representation of the truthtable inputString->out and
+ - `vars` is a lift of the variable names
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the expression object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "str2expr"></a>
+    <strong>str2expr ()</strong>
+    </dt>
+    <dd>
+    string to expression.
+ parses the internally stored string (`str`) and stores the result in the internal `expr` field
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the expression object to allow chaining
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "expr2str"></a>
+    <strong>expr2str ()</strong>
+    </dt>
+    <dd>
+    expression to string.
+ parses the internally stored expression (`expr`) and stores the result in the internal `str` field
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the expression object to allow chaining
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "eval"></a>
+    <strong>eval (assignment)</strong>
+    </dt>
+    <dd>
+    evaluate the expression with a set of assignments.
+ assigns vales to the variables and returns the result. If not all variables are assigned `true`/`false` this function will error
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">assignment</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">{string->boolean}</a></span>
+         assigns each variable a value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the result of the evaluation -> `true`/`false`
+    </ol>
+
+    <h3>Raises:</h3>
+    `variable not set` and `assigns not true/false`
+
+
+
+</dd>
+    <dt>
+    <a name = "expr2table"></a>
+    <strong>expr2table ()</strong>
+    </dt>
+    <dd>
+    expression to table.
+ create a truthtable for the stored `expr` and store it in `table` field
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the expression object to allow chaining
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "expr2vars"></a>
+    <strong>expr2vars ()</strong>
+    </dt>
+    <dd>
+    expression to vars.
+ Collect the names of the variables used in the expression.
+ The result is stored in the `vars` field as a set. This means that the real values are the keys of the table
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the expression object to allow chaining
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "table2knfexpr"></a>
+    <strong>table2knfexpr (short)</strong>
+    </dt>
+    <dd>
+    convert table to a knf expression
+ use `table` to create a knf expression stored in `expr`
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">short</span>
+            <span class="types"><span class="type">boolean</span></span>
+         whether `and` and `or` or `+` and `*` should be used as operators
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the expression object to allow chaining
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "table2dnfexpr"></a>
+    <strong>table2dnfexpr (short)</strong>
+    </dt>
+    <dd>
+    convert table to a dnf expression
+ use `table` to create a dnf expression stored in `expr`
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">short</span>
+            <span class="types"><span class="type">boolean</span></span>
+         whether `and` and `or` or `+` and `*` should be used as operators
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the expression object to allow chaining
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "equiv"></a>
+    <strong>equiv (other)</strong>
+    </dt>
+    <dd>
+    Check expressions for semantic equivalence.
+ Checks if the evaluation of the expression and another expression result in the same outcome
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">other</span>
+            <span class="types"><span class="type">expression</span></span>
+         The other expression to compare the current one
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        `true` if all results match
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "table2knfmin"></a>
+    <strong>table2knfmin ()</strong>
+    </dt>
+    <dd>
+    Convert ro minimized knf (Quine-McCluskey) based on table
+ Note that `self` stays unchanged -> return values
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        tuple of expressions (in some cases multiple exprs are possible in minimization)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "table2dnfmin"></a>
+    <strong>table2dnfmin ()</strong>
+    </dt>
+    <dd>
+    Convert ro minimized dnf (Quine-McCluskey) based on table
+ Note that `self` stays unchanged -> return values
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        tuple of expressions (in some cases multiple exprs are possible in minimization)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "print_truthtable"></a>
+    <strong>print_truthtable (...)</strong>
+    </dt>
+    <dd>
+    Print a truthtable of expressions.
+ Prints the truthtable of the current expression and the argument expressions
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         other expressions to include in the truthtable
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "read"></a>
+    <strong>read (fn)</strong>
+    </dt>
+    <dd>
+    Read a truthtable from file.
+ Reads a truthtable from a csv-like file (sep is the | by default)
+ Structure is `in1|in2|...||outName1|outName2`
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">fn</span>
+         name of the file to read in
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">str->expression</span></span>
+        map of string to expression (the column header of
+ the output column is taken as name)
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2022-01-10 18:50:46 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

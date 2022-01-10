@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>boolLab</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Source</h2>
+<ul class="nowrap">
+  <li><strong>cond_expression.lua</strong></li>
+  <li><a href="../source/cond_expression_utils.lua.html">cond_expression_utils.lua</a></li>
+  <li><a href="../source/tabular.lua.html">tabular.lua</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/cond_expression.html">cond_expression</a></li>
+  <li><a href="../modules/cond_expression_utils.html">cond_expression_utils</a></li>
+  <li><a href="../modules/tabular.html">tabular</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>cond_expression.lua</h2>
+<pre>
+<span class="comment">--- Provides some conditional expression tools in Lua.
+</span><span class="comment">-- Before calling a function, make sure you fullfill the stated prerequisites,
+</span><span class="comment">-- otherwise assert fill faill -&gt; you may used pcall to wrap the call
+</span><span class="comment">-- @alias expression
+</span>
+<span class="keyword">local</span> lpeg = <span class="global">require</span><span class="string">"lpeg"</span>
+<span class="keyword">local</span> utils = <span class="global">require</span><span class="string">"cond_expression_utils"</span>
+<span class="keyword">local</span> tabular = <span class="global">require</span><span class="string">"tabular"</span>
+
+<span class="comment">-- Lexical Elements
+</span><span class="keyword">local</span> Space = lpeg.S(<span class="string">" \n\t"</span>)^<span class="number">0</span>
+<span class="keyword">local</span> var = lpeg.C(lpeg.R(<span class="string">"Az"</span>)^<span class="number">1</span>) * Space
+<span class="keyword">local</span> OR  = lpeg.C(lpeg.S(<span class="string">"+"</span>) + lpeg.P(<span class="string">"or"</span>) ) * Space
+<span class="keyword">local</span> AND = lpeg.C(lpeg.S(<span class="string">"*"</span>) + lpeg.P(<span class="string">"and"</span>)) * Space
+<span class="keyword">local</span> Open = <span class="string">"("</span> * Space
+<span class="keyword">local</span> Close = <span class="string">")"</span> * Space
+<span class="keyword">local</span> NOT = lpeg.C(lpeg.P(<span class="string">"not"</span>) + lpeg.P(<span class="string">"not"</span>)) * Space
+
+<span class="comment">-- Grammar
+</span><span class="keyword">local</span> Exp, Term, Factor = lpeg.V<span class="string">"Exp"</span>, lpeg.V<span class="string">"Term"</span>, lpeg.V<span class="string">"Factor"</span>
+G = lpeg.P{ Exp,
+	Exp = lpeg.Ct(Term * (OR * Term)^<span class="number">0</span>),
+	Term = lpeg.Ct(Factor * (AND * Factor)^<span class="number">0</span>),
+	Factor = lpeg.Ct(NOT^-<span class="number">1</span> * (var + Open * Exp * Close)),
+}
+<span class="comment">-- check if reached end of inputstring (-1 is empty string if nothing comes behind)
+</span>G = Space * G * -<span class="number">1</span>
+
+<span class="keyword">local</span> expression = {str=<span class="keyword">nil</span>, expr=<span class="keyword">nil</span>, <span class="global">table</span>=<span class="keyword">nil</span>, vars=<span class="keyword">nil</span>, parser=G} <span class="comment">-- default values here
+</span>
+<span class="comment">--- Create a new expression.
+</span><span class="comment">-- This function takes a single table as argument with the following keys
+</span><span class="comment">-- possible as parameters. Not all keys have to be set e.g providing the <code>str</code>
+</span><span class="comment">-- suffices.
+</span><span class="comment">-- @tparam {str=string,expr,table={0,1}*-&gt;{0,1},vars:{string,...}} o table argument with **keys:**
+</span><span class="comment">--
+</span><span class="comment">-- - <code>str</code> is the string representation of the expression,
+</span><span class="comment">-- - <code>expr</code> is the nested table representation (you should only tamper with that if you know what you're doing),
+</span><span class="comment">-- - <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> is the representation of the truthtable inputString-&gt;out and
+</span><span class="comment">-- - <code>vars</code> is a lift of the variable names
+</span><a id="42"></a><span class="comment">-- @return the expression object
+</span><span class="keyword">function</span> expression:new(o) <span class="comment">-- key/value passing
+</span>	o = o <span class="keyword">or</span> {}
+	<span class="global">setmetatable</span>(o, self) <span class="comment">-- use the same metatable for all objects
+</span>	self.__index = self <span class="comment">-- lookup in class if key is not found
+</span>	<span class="keyword">return</span> o
+<span class="keyword">end</span>
+
+<span class="comment">--- new can be called via <code>expression(o)</code> as well
+</span><a id="51"></a><span class="comment">-- @see expression:new
+</span>expression.__call = <span class="keyword">function</span>(self, o) <span class="keyword">return</span> self:new(o) <span class="keyword">end</span>
+<span class="global">setmetatable</span>(expression, expression)
+
+<span class="comment">--- string to expression.
+</span><span class="comment">-- parses the internally stored string (<code>str</code>) and stores the result in the internal <code>expr</code> field
+</span><a id="57"></a><span class="comment">-- @return the expression object to allow chaining
+</span><span class="keyword">function</span> expression:str2expr()
+	<span class="global">assert</span>(<span class="global">type</span>(self.str) == <span class="string">"string"</span>, <span class="string">"Cannot build expr, since str is not set"</span>)
+	self.expr = self.parser:match(self.str)
+	<span class="keyword">return</span> self
+<span class="keyword">end</span>
+
+<span class="comment">--- expression to string.
+</span><span class="comment">-- parses the internally stored expression (<code>expr</code>) and stores the result in the internal <code>str</code> field
+</span><a id="66"></a><span class="comment">-- @return the expression object to allow chaining
+</span><span class="keyword">function</span> expression:expr2str()
+	<span class="global">assert</span>(<span class="global">type</span>(self.expr) == <span class="string">"table"</span>, <span class="string">"cannot build string without expr"</span>)
+	<span class="keyword">local</span> <span class="keyword">function</span> foo(expr)
+		<span class="keyword">if</span> <span class="global">type</span>(expr) ~= <span class="string">"table"</span> <span class="keyword">then</span> <span class="keyword">return</span> <span class="global">tostring</span>(expr) <span class="keyword">end</span>
+		<span class="keyword">if</span> #expr == <span class="number">1</span> <span class="keyword">then</span> <span class="keyword">return</span> foo(expr[<span class="number">1</span>]) <span class="keyword">end</span>
+		<span class="keyword">local</span> r = <span class="string">"("</span>
+		<span class="keyword">local</span> first = <span class="keyword">true</span>
+		<span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="global">ipairs</span>(expr) <span class="keyword">do</span>
+			<span class="keyword">local</span> pref = first <span class="keyword">and</span> <span class="string">""</span> <span class="keyword">or</span> <span class="string">" "</span>
+			r = r .. pref .. foo(v)
+			first = <span class="keyword">false</span>
+		<span class="keyword">end</span>
+		<span class="keyword">return</span> r .. <span class="string">")"</span>
+	<span class="keyword">end</span>
+	self.str = foo(self.expr)
+	<span class="keyword">return</span> self
+<span class="keyword">end</span>
+
+<span class="comment">--- evaluate the expression with a set of assignments.
+</span><span class="comment">-- assigns vales to the variables and returns the result. If not all variables are assigned <code>true</code>/<code>false</code> this function will error
+</span><span class="comment">-- @raise <code>variable not set</code> and <code>assigns not true/false</code>
+</span><span class="comment">-- @tparam {string-&gt;boolean} assignment assigns each variable a value
+</span><a id="89"></a><span class="comment">-- @return the result of the evaluation -&gt; <code>true</code>/<code>false</code>
+</span><span class="keyword">function</span> expression:eval(assignment)
+	<span class="global">assert</span>(<span class="global">type</span>(self.expr) == <span class="string">"table"</span>, <span class="string">"can only evaluate expression if expr is set"</span>)
+	<span class="comment">-- evaluate a given expression based on a given assignment
+</span>	<span class="comment">-- expression is supposed to be some sort of tree encoded with lists
+</span>	<span class="comment">-- e.g. {"a", "and" {"b", "or", "c"}}
+</span>	<span class="keyword">local</span> <span class="keyword">function</span> foo(expr, assignment)
+		<span class="comment">-- if leaf in expression fill in the variable value
+</span>		<span class="keyword">if</span> <span class="global">type</span>(expr) ~= <span class="string">"table"</span> <span class="keyword">then</span>
+			<span class="keyword">return</span> assignment[expr]
+		<span class="keyword">end</span>
+		<span class="comment">-- catches and {...} -&gt; ignore the layer
+</span>		<span class="keyword">if</span> #expr == <span class="number">1</span> <span class="keyword">then</span>
+			<span class="keyword">return</span> foo(expr[<span class="number">1</span>], assignment)
+		<span class="keyword">end</span>
+		<span class="comment">-- operator mapping
+</span>		<span class="keyword">local</span> e = {
+			[<span class="string">"and"</span>] = <span class="keyword">function</span>(a,b) <span class="keyword">return</span> a <span class="keyword">and</span> b <span class="keyword">end</span>,
+			[<span class="string">"*"</span>]   = <span class="keyword">function</span>(a,b) <span class="keyword">return</span> a <span class="keyword">and</span> b <span class="keyword">end</span>,
+
+			[<span class="string">"or"</span>] = <span class="keyword">function</span>(a,b) <span class="keyword">return</span> a <span class="keyword">or</span> b <span class="keyword">end</span>,
+			[<span class="string">"+"</span>]  = <span class="keyword">function</span>(a,b) <span class="keyword">return</span> a <span class="keyword">or</span> b <span class="keyword">end</span>,
+		}
+		<span class="comment">-- not is a special case since it is a prefix operator
+</span>		<span class="keyword">if</span> expr[<span class="number">1</span>] == <span class="string">"not"</span> <span class="keyword">then</span>
+			<span class="keyword">return</span> <span class="keyword">not</span> foo(expr[<span class="number">2</span>], assignment)
+		<span class="keyword">else</span>
+			<span class="keyword">local</span> o1 = foo(expr[<span class="number">1</span>], assignment)
+			<span class="keyword">for</span> i=<span class="number">2</span>,#expr,<span class="number">2</span> <span class="keyword">do</span>
+				o1 = e[expr[i]](
+					o1,
+					foo(expr[i+<span class="number">1</span>], assignment)
+					)
+			<span class="keyword">end</span>
+			<span class="keyword">return</span> o1
+		<span class="keyword">end</span>
+	<span class="keyword">end</span>
+	<span class="keyword">return</span> foo(self.expr, assignment)
+<span class="keyword">end</span>
+
+<span class="comment">--- expression to table.
+</span><span class="comment">-- create a truthtable for the stored <code>expr</code> and store it in <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> field
+</span><a id="131"></a><span class="comment">-- @return the expression object to allow chaining
+</span><span class="keyword">function</span> expression:expr2table()
+	<span class="global">assert</span>(<span class="global">type</span>(self.expr) == <span class="string">"table"</span> <span class="keyword">and</span> <span class="global">type</span>(self.vars) == <span class="string">"table"</span>, <span class="string">"vars and expr have to be set to be able to generate the table"</span>)
+	self.<span class="global">table</span> = {}
+	<span class="keyword">for</span> p <span class="keyword">in</span> utils.permute(self.vars) <span class="keyword">do</span>
+		<span class="keyword">local</span> input = <span class="string">""</span>
+		<span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="global">ipairs</span>(self.vars) <span class="keyword">do</span>
+			input = input .. utils.bool2str(p[v])
+		<span class="keyword">end</span>
+		<span class="keyword">local</span> output = utils.bool2str(self:eval(p))
+		self.<span class="global">table</span>[input] = output
+	<span class="keyword">end</span>
+	<span class="keyword">return</span> self
+<span class="keyword">end</span>
+
+<span class="comment">--- expression to vars.
+</span><span class="comment">-- Collect the names of the variables used in the expression.
+</span><span class="comment">-- The result is stored in the <code>vars</code> field as a set. This means that the real values are the keys of the table
+</span><a id="149"></a><span class="comment">-- @return the expression object to allow chaining
+</span><span class="keyword">function</span> expression:expr2vars()
+	<span class="global">assert</span>(<span class="global">type</span>(self.expr) == <span class="string">"table"</span>, <span class="string">"cannot retrieve vars if expr is not given"</span>)
+	<span class="comment">-- go through the parsed expression and collect all used variables
+</span>	<span class="comment">-- returns a table with the variables as keys (done to simulate a set)
+</span>	<span class="keyword">local</span> <span class="keyword">function</span> foo(expr, vars)
+		<span class="keyword">if</span> vars == <span class="keyword">nil</span> <span class="keyword">then</span> vars = {} <span class="keyword">end</span>
+		<span class="keyword">if</span> <span class="global">type</span>(expr) ~= <span class="string">"table"</span> <span class="keyword">then</span>
+			vars[expr] = <span class="string">"1"</span>
+			<span class="keyword">return</span> vars
+		<span class="keyword">end</span>
+		<span class="keyword">if</span> #expr &lt;= <span class="number">2</span> <span class="keyword">then</span>
+			foo(expr[#expr], vars)
+			<span class="keyword">return</span> vars
+		<span class="keyword">end</span>
+		foo(expr[<span class="number">1</span>], vars)
+		<span class="keyword">for</span> i=<span class="number">2</span>,#expr,<span class="number">2</span> <span class="keyword">do</span>
+			foo(expr[i+<span class="number">1</span>], vars)
+		<span class="keyword">end</span>
+		<span class="keyword">return</span> vars
+	<span class="keyword">end</span>
+	self.vars = utils.set2list(foo(self.expr, {}))
+	<span class="global">table</span>.sort(self.vars) <span class="comment">-- sort the variables for uniform output
+</span>	<span class="keyword">return</span> self
+<span class="keyword">end</span>
+
+<span class="comment">--- convert table to a knf expression
+</span><span class="comment">-- use <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> to create a knf expression stored in <code>expr</code>
+</span><span class="comment">-- @tparam boolean short whether <code>and</code> and <code>or</code> or <code>+</code> and <code>*</code> should be used as operantors
+</span><a id="178"></a><span class="comment">-- @return the expression object to allow chaining
+</span><span class="keyword">function</span> expression:table2knfexpr(short)
+	<span class="global">assert</span>(<span class="global">type</span>(self.<span class="global">table</span>) == <span class="string">"table"</span>, <span class="string">"table has to be set for knfexpr"</span>)
+	self.expr = {}
+	<span class="keyword">local</span> firstOuter = <span class="keyword">true</span>
+	<span class="keyword">for</span> input,output <span class="keyword">in</span> <span class="global">pairs</span>(self.<span class="global">table</span>) <span class="keyword">do</span>
+		<span class="keyword">if</span> output == <span class="string">"0"</span> <span class="keyword">then</span>
+			<span class="keyword">if</span> <span class="keyword">not</span> firstOuter <span class="keyword">then</span> <span class="global">table</span>.insert(self.expr, short <span class="keyword">and</span> <span class="string">"*"</span> <span class="keyword">or</span> <span class="string">"and"</span>) <span class="keyword">end</span>
+			firstOuter = <span class="keyword">false</span>
+			<span class="keyword">local</span> firstInner = <span class="keyword">true</span>
+			<span class="keyword">local</span> i = <span class="number">1</span>
+			<span class="keyword">local</span> maxterm = {}
+			<span class="keyword">for</span> v <span class="keyword">in</span> input:gmatch(<span class="string">"."</span>) <span class="keyword">do</span>
+				<span class="keyword">if</span> <span class="keyword">not</span> firstInner <span class="keyword">then</span> <span class="global">table</span>.insert(maxterm, short <span class="keyword">and</span> <span class="string">"+"</span> <span class="keyword">or</span> <span class="string">"or"</span>) <span class="keyword">end</span>
+				firstInner = <span class="keyword">false</span>
+				<span class="keyword">if</span> v == <span class="string">"0"</span> <span class="keyword">then</span>
+					<span class="global">table</span>.insert(maxterm, {self.vars[i]})
+				<span class="keyword">else</span>
+					<span class="global">table</span>.insert(maxterm, {short <span class="keyword">and</span> <span class="string">"not"</span> <span class="keyword">or</span> <span class="string">"not"</span>, self.vars[i]})
+				<span class="keyword">end</span>
+				i = i+<span class="number">1</span>
+			<span class="keyword">end</span>
+			<span class="global">table</span>.insert(self.expr, maxterm)
+		<span class="keyword">end</span>
+	<span class="keyword">end</span>
+	<span class="keyword">return</span> self
+<span class="keyword">end</span>
+
+<span class="comment">--- convert table to a dnf expression
+</span><span class="comment">-- use <a href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> to create a dnf expression stored in <code>expr</code>
+</span><span class="comment">-- @tparam boolean short whether <code>and</code> and <code>or</code> or <code>+</code> and <code>*</code> should be used as operantors
+</span><a id="209"></a><span class="comment">-- @return the expression object to allow chaining
+</span><span class="keyword">function</span> expression:table2dnfexpr(short)
+	<span class="global">assert</span>(<span class="global">type</span>(self.<span class="global">table</span>) == <span class="string">"table"</span>, <span class="string">"table has to be set for dnfexpr"</span>)
+	self.expr = {}
+	<span class="keyword">local</span> firstOuter = <span class="keyword">true</span>
+	<span class="keyword">for</span> input,output <span class="keyword">in</span> <span class="global">pairs</span>(self.<span class="global">table</span>) <span class="keyword">do</span>
+		<span class="keyword">if</span> output == <span class="string">"1"</span> <span class="keyword">then</span>
+			<span class="keyword">if</span> <span class="keyword">not</span> firstOuter <span class="keyword">then</span> <span class="global">table</span>.insert(self.expr, short <span class="keyword">and</span> <span class="string">"+"</span> <span class="keyword">or</span> <span class="string">"or"</span>) <span class="keyword">end</span>
+			firstOuter = <span class="keyword">false</span>
+			<span class="keyword">local</span> firstInner = <span class="keyword">true</span>
+			<span class="keyword">local</span> i = <span class="number">1</span>
+			<span class="keyword">local</span> minterm = {}
+			<span class="keyword">for</span> v <span class="keyword">in</span> input:gmatch(<span class="string">"."</span>) <span class="keyword">do</span>
+				<span class="keyword">if</span> <span class="keyword">not</span> firstInner <span class="keyword">then</span> <span class="global">table</span>.insert(minterm, short <span class="keyword">and</span> <span class="string">"*"</span> <span class="keyword">or</span> <span class="string">"and"</span>) <span class="keyword">end</span>
+				firstInner = <span class="keyword">false</span>
+				<span class="keyword">if</span> v == <span class="string">"1"</span> <span class="keyword">then</span>
+					<span class="global">table</span>.insert(minterm, {self.vars[i]})
+				<span class="keyword">else</span>
+					<span class="global">table</span>.insert(minterm, {short <span class="keyword">and</span> <span class="string">"not"</span> <span class="keyword">or</span> <span class="string">"not"</span>, self.vars[i]})
+				<span class="keyword">end</span>
+				i = i+<span class="number">1</span>
+			<span class="keyword">end</span>
+			<span class="global">table</span>.insert(self.expr, minterm)
+		<span class="keyword">end</span>
+	<span class="keyword">end</span>
+	<span class="keyword">return</span> self
+<span class="keyword">end</span>
+
+<span class="comment">--- Check expressions for semantic equivalence.
+</span><span class="comment">-- Checks if the evaluation of the expression and another expression result in the same outcome
+</span><span class="comment">-- @tparam expression other The other expression to compare the current one
+</span><a id="240"></a><span class="comment">-- @return <code>true</code> if all results match
+</span><span class="keyword">function</span> expression:equiv(other)
+	<span class="keyword">local</span> set1 = utils.list2set(self.vars)
+	<span class="keyword">local</span> set2 = utils.list2set(other.vars)
+	<span class="keyword">local</span> vars = utils.union(set1, set2)
+
+	<span class="keyword">for</span> p <span class="keyword">in</span> utils.permute(vars) <span class="keyword">do</span>
+		<span class="keyword">if</span> self:eval(p) ~= other:eval(p) <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">false</span> <span class="keyword">end</span>
+	<span class="keyword">end</span>
+	<span class="keyword">return</span> <span class="keyword">true</span>
+<span class="keyword">end</span>
+
+<span class="comment">--- Print a truthtable of expressions.
+</span><span class="comment">-- Prints the truthtable of the current expression and the argument expressions
+</span><a id="254"></a><span class="comment">-- @param ... other expressions to include in the truthtable
+</span><span class="keyword">function</span> expression.print_truthtable(...)
+	<span class="keyword">local</span> tab = {}
+
+	<span class="keyword">local</span> vars = {}
+	<span class="keyword">for</span> i,v <span class="keyword">in</span> <span class="global">ipairs</span>({...}) <span class="keyword">do</span>
+		<span class="global">assert</span>(<span class="global">type</span>(v.vars) == <span class="string">"table"</span>, <span class="global">string</span>.format(<span class="string">"vars has to be set for truthtable printing (arg %d)"</span>, i))
+		<span class="global">assert</span>(<span class="global">type</span>(v.expr) == <span class="string">"table"</span>, <span class="global">string</span>.format(<span class="string">"expr has to be set for truthtable printing (arg %d)"</span>, i))
+		<span class="global">assert</span>(<span class="global">type</span>(v.str) == <span class="string">"string"</span>, <span class="global">string</span>.format(<span class="string">"str has to be set for truthtable printing (arg %d)"</span>, i))
+		vars = utils.union(vars, v.vars)
+	<span class="keyword">end</span>
+	<span class="global">table</span>.sort(vars)
+
+	<span class="keyword">local</span> hdr = {}
+	<span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="global">ipairs</span>(vars) <span class="keyword">do</span>
+		<span class="global">table</span>.insert(hdr, v)
+	<span class="keyword">end</span>
+	<span class="global">table</span>.insert(hdr, <span class="string">""</span>)
+	<span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="global">ipairs</span>({...}) <span class="keyword">do</span>
+		<span class="global">table</span>.insert(hdr, <span class="string">"\""</span> .. v.str .. <span class="string">"\""</span>)
+	<span class="keyword">end</span>
+	<span class="global">table</span>.insert(tab, hdr)
+
+	<span class="keyword">local</span> row
+	<span class="keyword">for</span> p <span class="keyword">in</span> utils.permute(vars) <span class="keyword">do</span>
+		row = {}
+		<span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="global">ipairs</span>(vars) <span class="keyword">do</span>
+			<span class="global">table</span>.insert(row, utils.bool2str(p[v]))
+		<span class="keyword">end</span>
+		<span class="global">table</span>.insert(row, <span class="string">""</span>)
+		<span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="global">ipairs</span>({...}) <span class="keyword">do</span>
+			<span class="global">table</span>.insert(row, utils.bool2str(v:eval(p)))
+		<span class="keyword">end</span>
+		<span class="global">table</span>.insert(tab, row)
+	<span class="keyword">end</span>
+
+	<span class="global">print</span>()
+	tabular.tabular_printing(tab)
+<span class="keyword">end</span>
+
+<span class="keyword">return</span> expression</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-11-13 13:52:24 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

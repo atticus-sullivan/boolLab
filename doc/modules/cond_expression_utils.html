@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>ldoc</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/cond_expression.html">cond_expression</a></li>
+  <li><a href="../modules/cond_expression_minimizer.html">cond_expression_minimizer</a></li>
+  <li><strong>cond_expression_utils</strong></li>
+  <li><a href="../modules/tabular.html">tabular</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>cond_expression_utils</code></h1>
+<p>Utilities for the cond_expression module.</p>
+<p></p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#shallow_copy">shallow_copy (t)</a></td>
+	<td class="summary">Creates a shallow copy of a table (array+map part).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#permute">permute (vars)</a></td>
+	<td class="summary">iterator (2) for permuting over all possible assignments of a list of variables.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#bool2str">bool2str (x)</a></td>
+	<td class="summary">Convert booleans to strings (`0`/`1`).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#set2list">set2list (set)</a></td>
+	<td class="summary">Converts a set (keys are values) to an array.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#list2set">list2set (list)</a></td>
+	<td class="summary">Converts an array to a set (keys are values).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#union">union (t1, t2)</a></td>
+	<td class="summary">Perform a union on two sets.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#table_print">table_print (t)</a></td>
+	<td class="summary">Print a nested table
+ maybe replace with penlight</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "shallow_copy"></a>
+    <strong>shallow_copy (t)</strong>
+    </dt>
+    <dd>
+    Creates a shallow copy of a table (array+map part).
+ Might use penlight for that thing
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         the table to copy
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        copy of t
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "permute"></a>
+    <strong>permute (vars)</strong>
+    </dt>
+    <dd>
+    iterator (2) for permuting over all possible assignments of a list of variables.
+ Generates in an ascending order (if seen assignment as binary number)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">vars</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">{string,...}</a></span>
+         a list of variable names (strings)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the iterator based on coroutines
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "bool2str"></a>
+    <strong>bool2str (x)</strong>
+    </dt>
+    <dd>
+    Convert booleans to strings (`0`/`1`).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">bool</span></span>
+         the boolean to convert
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the textual representation
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "set2list"></a>
+    <strong>set2list (set)</strong>
+    </dt>
+    <dd>
+    Converts a set (keys are values) to an array.
+ maybe replace with penlight
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+            <span class="types"><span class="type">tab</span></span>
+         a table with the keys as values
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">tab</span></span>
+        a list of the set entries
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "list2set"></a>
+    <strong>list2set (list)</strong>
+    </dt>
+    <dd>
+    Converts an array to a set (keys are values).
+ maybe replace with penlight
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">list</span>
+            <span class="types"><span class="type">tab</span></span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">tab</span></span>
+        a table with the keys as values
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "union"></a>
+    <strong>union (t1, t2)</strong>
+    </dt>
+    <dd>
+    Perform a union on two sets.
+ maybe replace with penlight
+ sets are tables with the keys as values
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t1</span>
+            <span class="types"><span class="type">set</span></span>
+         the one set
+        </li>
+        <li><span class="parameter">t2</span>
+            <span class="types"><span class="type">set</span></span>
+         the other set
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">set</span></span>
+        a new set containing the set entries of both sets
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "table_print"></a>
+    <strong>table_print (t)</strong>
+    </dt>
+    <dd>
+    Print a nested table
+ maybe replace with penlight
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+            <span class="types"><span class="type">tab</span></span>
+         the nested table
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2022-01-10 18:50:46 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
