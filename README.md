@@ -17,8 +17,8 @@ For a description of these operations and conversions open `docs/index.html` in
 your browser.
 
 ## Requirements
-- >`lua5.3`
-- `lpeg`
+- \>`lua5.3`
+- `lpeg` (for string parsing - install e.g. via `luarocks`)
 
 All in all this lua lib does not have any more requirements only if you want to build
 the documentation you'll need the `ldoc` lua lib and `lester` if you want to run
