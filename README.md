@@ -28,5 +28,27 @@ the tests.
 Run `make doc` to build the docs (read by opening`docs/index.html` in the browser)
 
 ## Installation/Usage
-Install `lua5.3` or above and run the main file via `lua main.lua` from within the
-`src` folder.
+Install `lua5.3` or above and `luarocks`. Install `lpeg` via `luarocks [--local]
+--lua-version=<5.4/5.3> lpeg` and make sure it can be found via `$LUA_PATH` (for
+me under linux that is `eval $(luarocks --lua-version=<5.4/5.3> path)`)
+
+Then run the main.lua file via `lua main.lua` from within the
+`src` folder. Currently there is no interactive usage except by using the lua
+shell simply enter `lua` in the terminal, but I'd advise (as stated in the first
+paragraph) in modification of the `main.lua` file for testing own boolean
+formula.
+
+### Windows
+I don't use windows so I don't know exaxtly but probably the easiest way is via
+WSL (Windows Subsystem for Linux)
+
+If someone knows a better way for using unter windows, let me know (via an issue).
+
+### MacOS
+I don't use MacOS either, but as far as I researched `lua` and `luarocks` should
+be available via homebrew.
+
+If someone knows a better way for using unter macOS, let me know (via an issue).
+
+### Linux
+For most distros `lua` and `luarocks` should be in the repos.
