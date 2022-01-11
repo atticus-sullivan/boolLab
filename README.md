@@ -32,6 +32,10 @@ Install `lua5.3` or above and `luarocks`. Install `lpeg` via `luarocks [--local]
 --lua-version=<5.4/5.3> lpeg` and make sure it can be found via `$LUA_PATH` (for
 me under linux that is `eval $(luarocks --lua-version=<5.4/5.3> path)`)
 
+Typical way to download this package whould be `git clone <ssh/https url>` (and `git
+pull` for getting the latest changes (restore the `main.lua` in advance by
+runing `git checkout main.lua` in the `src` folder))
+
 Then run the main.lua file via `lua main.lua` from within the
 `src` folder. Currently there is no interactive usage except by using the lua
 shell simply enter `lua` in the terminal, but I'd advise (as stated in the first
