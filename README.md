@@ -17,10 +17,16 @@ For a description of these operations and conversions open `docs/index.html` in
 your browser.
 
 ## Requirements
-`lua5.4`
+- >`lua5.3`
+- `lpeg`
 
-All in all this lua lib does not have any requirements only if you want to build
-the documentation you'll need the `ldoc` lua lib.
+All in all this lua lib does not have any more requirements only if you want to build
+the documentation you'll need the `ldoc` lua lib and `lester` if you want to run
+the tests.
 
 ## Documentation
 Run `make doc` to build the docs (read by opening`docs/index.html` in the browser)
+
+## Installation/Usage
+Install `lua5.3` or above and run the main file via `lua main.lua` from within the
+`src` folder.
