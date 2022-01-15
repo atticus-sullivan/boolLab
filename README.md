@@ -56,3 +56,15 @@ If someone knows a better way for using unter macOS, let me know (via an issue).
 
 ### Linux
 For most distros `lua` and `luarocks` should be in the repos.
+
+Example on Raspberry Pi with raspian and `lua5.3`:
+- `sudo apt install lua5.3 liblua5.3-dev luarocks`
+- `git clone git@gitlab.lrz.de:lukas.h/boollab.git && cd boollab`
+- `luarocks --local --lua-version=5.3 install lpeg`
+- `eval $(luarocks --local --lua-version=5.3 path)`
+- `cd src && lua5.3 main.lua`
+
+(normally `--lua-version` is nice to be able to manage multiple lua versions
+with `luarocks`, but it seems that the `luarocks` version of raspian doesn't
+support this flag, so be carefull if you have other versions of `lua` installed,
+for which lua-version `luarocks` is installing the library)
