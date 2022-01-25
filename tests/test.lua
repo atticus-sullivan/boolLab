@@ -38,19 +38,30 @@ local function semantic_eq_expr_tables(e1, e2)
 		elseif #e1 ~= 1 and #e2 == 1 then
 			return semantic_eq_expr_tables(e1, e2[1])
 		elseif #e1 ~= 1 and #e2 ~= 1 then
-			if #e1 ~= #e2 then return false end
+			if #e1 ~= #e2 then
+				-- expression_utils.table_print(e1) expression_utils.table_print(e2)
+				return false
+			end
 			for i,v in pairs(e1) do
+				-- print(i)
 				if not semantic_eq_expr_tables(v,e2[i]) then return false end
 			end
 			return true
 		end
 	elseif type(e1) == "table" and type(e2) ~= "table" then
-		if #e1 ~= 1 then return false end
+		if #e1 ~= 1 then
+			expression_utils.table_print(e1)
+			return false
+		end
 		return semantic_eq_expr_tables(e1[1], e2)
 	elseif type(e1) ~= "table" and type(e2) == "table" then
-		if #e2 ~= 1 then return false end
+		if #e2 ~= 1 then
+			expression_utils.table_print(e2)
+			return false
+		end
 		return semantic_eq_expr_tables(e1, e2[1])
 	elseif type(e1) ~= "table" and type(e2) ~= "table" then
+		-- print(e1,e2)
 		return e1 == e2
 	end
 end
@@ -392,6 +403,88 @@ describe('expr', function()
 		vars={"a", "b", "c"}
 	}
 	table.insert(tries, tr)
+	t = {
+		["00000"] = "1",
+		["00001"] = "1",
+		["00010"] = "1",
+		["00011"] = "1",
+		["00100"] = "0",
+		["00101"] = "0",
+		["00110"] = "0",
+		["00111"] = "0",
+		["01000"] = "1",
+		["01001"] = "1",
+		["01010"] = "0",
+		["01011"] = "0",
+		["01100"] = "1",
+		["01101"] = "1",
+		["01110"] = "0",
+		["01111"] = "0",
+		["10000"] = "1",
+		["10001"] = "0",
+		["10010"] = "1",
+		["10011"] = "0",
+		["10100"] = "1",
+		["10101"] = "0",
+		["10110"] = "1",
+		["10111"] = "0",
+		["11000"] = "1",
+		["11001"] = "1",
+		["11010"] = "1",
+		["11011"] = "1",
+		["11100"] = "1",
+		["11101"] = "1",
+		["11110"] = "1",
+		["11111"] = "1",
+	}
+	tr = {
+		str="not (not s1 * not s2 * a + not s1 * s2 * b + s1 * not s2 * c)",
+		expr={"not", {{{"not", "s1"}, "*", {"not", "s2"}, "*", "a"}, "+", {{"not", "s1"}, "*", "s2", "*", "b"}, "+", {"s1", "*", {"not", "s2"}, "*", {"c", }}}},
+		table=t,
+		vars={"s1", "s2", "a", "b", "c"}
+	}
+	table.insert(tries, tr)
+	t = {
+		["00000"] = "1",
+		["00001"] = "1",
+		["00010"] = "1",
+		["00011"] = "1",
+		["00100"] = "1",
+		["00101"] = "0",
+		["00110"] = "1",
+		["00111"] = "1",
+		["01000"] = "1",
+		["01001"] = "1",
+		["01010"] = "1",
+		["01011"] = "1",
+		["01100"] = "1",
+		["01101"] = "0",
+		["01110"] = "0",
+		["01111"] = "1",
+		["10000"] = "1",
+		["10001"] = "0",
+		["10010"] = "1",
+		["10011"] = "1",
+		["10100"] = "0",
+		["10101"] = "0",
+		["10110"] = "1",
+		["10111"] = "1",
+		["11000"] = "1",
+		["11001"] = "0",
+		["11010"] = "1",
+		["11011"] = "1",
+		["11100"] = "0",
+		["11101"] = "0",
+		["11110"] = "0",
+		["11111"] = "1",
+	}
+	tr = {
+		str="not a * not b * not c + not a * not c * not s1 + not c * not s2 + not a * not b * not s2 + not a * not s1 * not s2 + s1 * s2 + not b * s1",
+		expr={{{"not", "a"}, "*", {"not", "b"}, "*", {"not", "c"}}, "+", {{"not", "a"}, "*", {"not", "c"}, "*", {"not", "s1"}}, "+", {{"not", "c"}, "*", {"not", "s2"}}, "+", {{"not", "a"}, "*", {"not", "b"}, "*", {"not", "s2"}}, "+", {{"not", "a"}, "*", {"not", "s1"}, "*", {"not", "s2"}}, "+", {"s1", "*", "s2"}, "+", {{"not", "b"}, "*", "s1"}},
+		table=t,
+		vars={"a", "b", "c", "s1", "s2"}
+	}
+	table.insert(tries, tr)
 	describe("new", function()
 		it("{}", function()
 			expect.truthy(tab_eq(expression:new{}, {}))
@@ -417,8 +510,7 @@ describe('expr', function()
 	describe("expr2table", function()
 		for _,v in ipairs(tries) do
 			it(v.str, function()
-				local e = expression:new{expr=v.expr}
-				e:expr2vars()
+				local e = expression:new{expr=v.expr, vars=v.vars}
 				e:expr2table()
 				expect.truthy(semantic_eq_expr_tables(e.table, v.table))
 			end)
@@ -429,7 +521,10 @@ describe('expr', function()
 			it(v.str, function()
 				local e = expression:new{expr=v.expr}
 				e:expr2vars()
-				expect.truthy(semantic_eq_expr_tables(e.vars, v.vars))
+				local l1 = expression_utils.shallow_copy(e.vars)
+				local l2 = expression_utils.shallow_copy(v.vars)
+				table.sort(l1) table.sort(l2)
+				expect.truthy(semantic_eq_expr_tables(l1, l2))
 			end)
 		end
 	end)
@@ -481,7 +576,7 @@ describe('expr', function()
 			end)
 		end
 	end)
-	describe("equiv", function()
+	describe("equiv", function() -- TODO mehr fälle, auch falsy
 		it('{"a", "and", "b"} and {"b", "and", "a"}', function()
 			local e1 = expression:new{expr={"a", "and", "b"}, vars={"a", "b"}}
 			local e2 = expression:new{expr={"b", "and", "a"}, vars={"a", "b"}}
