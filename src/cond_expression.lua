@@ -11,7 +11,7 @@ local minimizer = require"cond_expression_minimizer"
 
 -- Lexical Elements
 local Space = lpeg.S(" \n\t")^0
-local var = lpeg.C(lpeg.R("Az")^1) * Space
+local var = lpeg.C((lpeg.R("Az")+lpeg.R("09"))^1) * Space
 local OR  = lpeg.C(lpeg.S("+") + lpeg.P("or") ) * Space
 local AND = lpeg.C(lpeg.S("*") + lpeg.P("and")) * Space
 local Open = "(" * Space
