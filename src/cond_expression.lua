@@ -240,6 +240,7 @@ end
 -- @tparam expression other The other expression to compare the current one
 -- @return `true` if all results match
 function expression:equiv(other)
+	assert(type(self.vars) == "table", string.format("vars has to be set for equivalence checking"))
 	local set1 = utils.list2set(self.vars)
 	local set2 = utils.list2set(other.vars)
 	local vars = utils.union(set1, set2)
