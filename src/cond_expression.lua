@@ -281,8 +281,12 @@ end
 
 --- Print a truthtable of expressions.
 -- Prints the truthtable of the current expression and the argument expressions
+-- **Attention:** `expr:print_truthtable(...)` isn't possible, you have to use
+-- expression_module.`print_truthtable(true, expressions)` due to the `printExpr`
+-- parameter
+-- @tparam bool printExpr `true` if string representation of the expression should be included in the header
 -- @param ... other expressions to include in the truthtable
-function expression.print_truthtable(...)
+function expression.print_truthtable(printExpr,...)
 	local tab = {}
 
 	local vars = {}
@@ -300,8 +304,12 @@ function expression.print_truthtable(...)
 		table.insert(hdr, v)
 	end
 	table.insert(hdr, "")
-	for _,v in ipairs({...}) do
-		table.insert(hdr, "\"" .. v.str .. "\"")
+	for i,v in ipairs({...}) do
+		if printExpr then
+			table.insert(hdr, "\"" .. v.str .. "\"")
+		else
+			table.insert(hdr, "\"" .. "expr" .. i .. "\"")
+		end
 	end
 	table.insert(tab, hdr)
 
