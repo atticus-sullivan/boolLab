@@ -244,6 +244,8 @@ function expression:equiv(other)
 	local set2 = utils.list2set(other.vars)
 	local vars = utils.union(set1, set2)
 
+	vars = utils.set2list(vars)
+
 	for p in utils.permute(vars) do
 		if self:eval(p) ~= other:eval(p) then return false end
 	end
@@ -287,8 +289,9 @@ function expression.print_truthtable(...)
 		assert(type(v.vars) == "table", string.format("vars has to be set for truthtable printing (arg %d)", i))
 		assert(type(v.expr) == "table", string.format("expr has to be set for truthtable printing (arg %d)", i))
 		assert(type(v.str) == "string", string.format("str has to be set for truthtable printing (arg %d)", i))
-		vars = utils.union(vars, v.vars)
+		vars = utils.union(vars, utils.list2set(v.vars))
 	end
+	vars = utils.set2list(vars)
 	table.sort(vars)
 
 	local hdr = {}
